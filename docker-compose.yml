@@ -9,8 +9,6 @@ services:
     container_name: iwel_app
     restart: unless-stopped
     working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
     env_file:
       - ./.env
     depends_on:
