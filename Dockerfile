@@ -2,10 +2,9 @@ FROM php:8.2-fpm
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install dependencies dengan apt-get clean untuk mengecilkan ukuran image
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -20,21 +19,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application files
-COPY . /var/www/html
+# Copy aplikasi
+COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+# Install PHP dependencies (Tanpa scripts untuk menghindari koneksi DB saat build)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
-# Set permissions for Laravel storage and cache directories
+# Set permissions awal
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy custom entrypoint script that generates APP_KEY when not set
+# Copy entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Use the custom entrypoint
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 9000
 CMD ["php-fpm"]

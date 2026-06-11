@@ -5,14 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: iwel-iwel-dev-app:latest
     container_name: iwel_app
     restart: unless-stopped
-    working_dir: /var/www/html
-    env_file:
-      - ./.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - iwel-network
 
@@ -24,10 +21,10 @@ services:
       - "9900:80"
     volumes:
       - .:/var/www/html
-      # Mount the entire nginx configuration directory to avoid file vs directory mount issues
       - ./nginx:/etc/nginx/conf.d
     depends_on:
-      - app
+      app:
+        condition: service_started
     networks:
       - iwel-network
 
@@ -37,12 +34,16 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env
-    ports:
-      - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
     networks:
       - iwel-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "$DB_USERNAME", "-p$DB_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   dbdata:

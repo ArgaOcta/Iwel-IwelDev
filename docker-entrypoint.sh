@@ -1,21 +1,27 @@
 #!/bin/sh
 set -e
 
-# Ensure Composer dependencies are installed first. When the host directory is mounted,
-# the vendor folder may be missing inside the container. Install them if the directory
-# does not exist.
-if [ ! -d "vendor" ]; then
-  echo "Installing Composer dependencies..."
-  composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+# 1. Pastikan folder storage dapat ditulis oleh web-server
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# 2. Cek apakah vendor ada (jika mount volume menghapus vendor)
+if [ ! -d "/var/www/html/vendor" ]; then
+  echo "Vendor directory not found. Installing dependencies..."
+  composer install --no-interaction --prefer-dist --optimize-autoloader
 fi
 
-# Generate APP_KEY if not set (requires vendor files)
+# 3. Generate Key jika belum ada
 if [ -z "$APP_KEY" ]; then
   echo "Generating Laravel APP_KEY..."
   php artisan key:generate --force
 fi
 
-# Bersihkan cache konfigurasi
+# 4. Migrasi Database
+echo "Running migrations..."
+php artisan migrate --force
+
+# 5. Cache Konfigurasi
 php artisan config:cache
 
 exec "$@"
