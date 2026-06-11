@@ -26,7 +26,8 @@ services:
       - "9900:80"
     volumes:
       - .:/var/www/html
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # Mount the entire nginx configuration directory to avoid file vs directory mount issues
+      - ./nginx:/etc/nginx/conf.d
     depends_on:
       - app
     networks:
