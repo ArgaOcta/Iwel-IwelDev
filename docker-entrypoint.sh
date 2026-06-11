@@ -3,7 +3,7 @@ set -e
 
 # 1. Pastikan izin akses folder benar untuk seluruh direktori aplikasi.
 echo "Setting permissions..."
-chown -R www-data:www-data /var/www/html
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # 2. Cek apakah vendor ada (Jika mount volume lokal menimpa folder kontainer)
