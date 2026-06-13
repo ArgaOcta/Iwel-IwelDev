@@ -1,24 +1,58 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ComplaintController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+// Rute Halaman Publik
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
 Route::view('/how-it-works', 'how-it-works')->name('how-it-works');
 Route::view('/about', 'about')->name('about');
 Route::view('/faq', 'faq')->name('faq');
-Route::get('/', function () {
-    return view('welcome');
+
+Route::get('/notifikasi', function () {
+    return view('mahasiswa.notification');
+})->name('notifications.index');
+
+// Rute Dashboard Utama (Multi-Role)
+// Hanya gunakan pemanggilan Controller, hapus versi rute closure (fungsi) lama
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+Route::get('/pengaduan/riwayat', [ComplaintController::class, 'index'])
+    ->name('complaint.history');
+Route::get('/pengaduan/{id}/detail', [ComplaintController::class, 'show'])
+    ->name('complaint.show');
+Route::get('/pengaduan/baru', [ComplaintController::class, 'create'])
+    ->name('complaint.create');
+Route::post('/pengaduan', [ComplaintController::class, 'store'])
+    ->name('complaint.store');
+
+// Rute Tambahan untuk Panel Admin
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Rute Tambahan untuk Panel Super Admin
+Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('superadmin.dashboard');
+    })->name('superadmin.dashboard');
+});
 
+// Rute Profil Bawaan Breeze
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile', function () {
+        return view('mahasiswa.profile');
+    })->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
