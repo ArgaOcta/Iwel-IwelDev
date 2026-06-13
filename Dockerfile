@@ -19,6 +19,7 @@ WORKDIR /var/app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
+    rsync \
     libpng-dev \
     libonig-dev \
     libxml2-dev \

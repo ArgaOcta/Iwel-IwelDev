@@ -10,6 +10,8 @@ services:
     env_file:
       - ./.env
     volumes:
+      # Mount .env from host so it's always present inside the container
+      - ./.env:/var/app/.env:ro
       # Share the built app (with compiled assets) from container to nginx
       - app_data:/var/www/html
     depends_on:
