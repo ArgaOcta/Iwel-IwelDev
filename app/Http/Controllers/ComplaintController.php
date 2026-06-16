@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Complaint;
 use App\Models\Category;
+use App\Models\ComplaintResponse;
 use Illuminate\Support\Str;
 
 class ComplaintController extends Controller
@@ -15,8 +16,7 @@ class ComplaintController extends Controller
     public function show($id, Request $request)
     {
         // Pastikan pengguna hanya bisa membuka detail keluhan miliknya sendiri
-        $complaint = Complaint::with(['category', 'attachments'])
-            ->where('user_id', $request->user()->id)
+        $complaint = Complaint::with(['user', 'category', 'attachments', 'responses.user'])
             ->findOrFail($id);
 
         return view('mahasiswa.complaintdetail', compact('complaint'));
@@ -112,8 +112,33 @@ class ComplaintController extends Controller
                 ]);
             }
         }
+        
 
         // Alihkan (Redirect) kembali ke halaman dashboard dengan membawa pesan sukses
         return redirect()->route('dashboard')->with('success', 'Pengaduan berhasil dikirim dengan Nomor Tiket: ' . $ticket_no);
+    }
+
+    public function storeResponse(Request $request, $id)
+    {
+        $request->validate([
+            'response' => 'required|string',
+        ]);
+
+        $complaint = Complaint::findOrFail($id);
+
+        // Simpan data balasan ke database
+        ComplaintResponse::create([
+            'complaint_id' => $complaint->id,
+            'user_id' => auth()->id(),
+            'message' => $request->response,
+            'is_internal' => $request->has('is_internal') ? true : false,
+        ]);
+
+        // Opsional cerdas: Jika status masih 'Pending', ubah otomatis menjadi 'In Progress' karena admin sudah merespons
+        if ($complaint->status === 'Pending') {
+            $complaint->update(['status' => 'In Progress']);
+        }
+
+        return back()->with('success', 'Balasan berhasil diposting!');
     }
 }

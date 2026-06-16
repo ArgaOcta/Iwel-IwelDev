@@ -62,6 +62,10 @@ class Complaint extends Model
     {
         return $this->hasMany(AuditLog::class);
     }
+    public function responses()
+    {
+        return $this->hasMany(ComplaintResponse::class);
+    }
 }
 
 ?>
