@@ -5,7 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ComplaintManageController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserController; 
 use Illuminate\Support\Facades\Route;
 
 // Rute Halaman Publik
@@ -34,16 +34,24 @@ Route::get('/pengaduan/baru', [ComplaintController::class, 'create'])
 Route::post('/pengaduan', [ComplaintController::class, 'store'])
     ->name('complaint.store');
 
-// Rute Panel Admin
+// Rute Panel Admin (GABUNGAN KODE KAMU & AILA)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    // Analytics & Dashboard (Punya Kamu)
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/reports', [AdminDashboardController::class, 'reports'])->name('admin.reports');
     Route::get('/performance-report', [AdminDashboardController::class, 'performanceReports'])->name('admin.performance');
+    
+    // Kelola User (Punya Kamu)
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+    
+    // Manage Complaints (Punya Kamu)
     Route::get('/complaints', [ComplaintManageController::class, 'index'])->name('admin.complaints.index');
     Route::get('/complaints/{id}', [ComplaintManageController::class, 'show'])->name('admin.complaints.show');
     Route::post('/complaints/{id}/response', [ComplaintManageController::class, 'storeResponse'])->name('admin.complaints.response');
-    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+    
+    // Update Status + Audit Log (Punya Aila)
+    Route::put('/complaints/{id}/update-status', [ComplaintManageController::class, 'updateStatus'])->name('admin.complaints.update');
 });
 
 // Rute Panel Super Admin
@@ -60,4 +68,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
