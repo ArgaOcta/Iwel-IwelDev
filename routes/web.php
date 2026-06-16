@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 // Rute Halaman Publik
@@ -32,12 +33,22 @@ Route::get('/pengaduan/baru', [ComplaintController::class, 'create'])
 Route::post('/pengaduan', [ComplaintController::class, 'store'])
     ->name('complaint.store');
 
-// Rute Tambahan untuk Panel Admin
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-});
+// Rute Panel Admin
+Route::middleware(['auth', 'verified', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // Dashboard Admin
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        // Complaints Management
+        Route::prefix('complaints')
+            ->name('complaints.')
+            ->group(function () {
+                Route::get('/', [AdminController::class, 'complaints'])->name('index');
+                Route::get('/{id}', [AdminController::class, 'show'])->name('show');
+                Route::put('/{id}', [AdminController::class, 'update'])->name('update');
+            });
+    });
 
 // Rute Tambahan untuk Panel Super Admin
 Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->group(function () {
