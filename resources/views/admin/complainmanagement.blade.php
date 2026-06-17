@@ -14,7 +14,7 @@
         <div class="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
             <div class="flex flex-col gap-1 w-full md:w-72">
                 <span class="text-[#505f76] font-['Manrope-SemiBold',_sans-serif] text-[13px] font-semibold">Search Reports</span>
-                <div class="bg-white rounded-lg border border-[#c3c6d7] p-2 pl-9 relative focus-within:border-[#004ac6] transition-colors">
+                <div class="bg-white rounded-lg border border-[#c3c6d7] p-2 pl-9 relative focus-within:border-[#004ac6] transition-colors shadow-sm">
                     <svg class="absolute left-3 top-2.5 text-[#6b7280]" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M13.8333 15L8.58333 9.75C8.16667 10.0833 7.6875 10.3472 7.14583 10.5417C6.60417 10.7361 6.02778 10.8333 5.41667 10.8333C3.90278 10.8333 2.62153 10.309 1.57292 9.26042C0.524305 8.21181 0 6.93056 0 5.41667C0 3.90278 0.524305 2.62153 1.57292 1.57292C2.62153 0.524305 3.90278 0 5.41667 0C6.93056 0 8.21181 0.524305 9.26042 1.57292C10.309 2.62153 10.8333 3.90278 10.8333 5.41667C10.8333 6.02778 10.7361 6.60417 10.5417 7.14583C10.3472 7.6875 10.0833 8.16667 9.75 8.58333L15 13.8333L13.8333 15ZM5.41667 9.16667C6.45833 9.16667 7.34375 8.80208 8.07292 8.07292C8.80208 7.34375 9.16667 6.45833 9.16667 5.41667C9.16667 4.375 8.80208 3.48958 8.07292 2.76042C7.34375 2.03125 6.45833 1.66667 5.41667 1.66667C4.375 1.66667 3.48958 2.03125 2.76042 2.76042C2.03125 3.48958 1.66667 4.375 1.66667 5.41667C1.66667 6.45833 2.03125 7.34375 2.76042 8.07292C3.48958 8.80208 4.375 9.16667 5.41667 9.16667Z" fill="currentColor"/></svg>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="ID, Name, or Keyword" class="bg-transparent border-none outline-none w-full text-sm text-[#191b23] placeholder-[#6b7280]">
                 </div>
@@ -22,7 +22,7 @@
 
             <div class="flex flex-col gap-1 w-full md:w-48">
                 <span class="text-[#505f76] font-['Manrope-SemiBold',_sans-serif] text-[13px] font-semibold">Category</span>
-                <div class="relative bg-white rounded-lg border border-[#c3c6d7] cursor-pointer focus-within:border-[#004ac6] transition-colors">
+                <div class="relative bg-white rounded-lg border border-[#c3c6d7] cursor-pointer focus-within:border-[#004ac6] transition-colors shadow-sm">
                     <select name="category" onchange="this.form.submit()" class="w-full appearance-none bg-transparent outline-none p-2 px-3 text-[#191b23] text-sm cursor-pointer">
                         <option value="all">All Categories</option>
                         @foreach($categories as $cat)
@@ -35,7 +35,7 @@
 
             <div class="flex flex-col gap-1 w-full md:w-48">
                 <span class="text-[#505f76] font-['Manrope-SemiBold',_sans-serif] text-[13px] font-semibold">Status</span>
-                <div class="relative bg-white rounded-lg border border-[#c3c6d7] cursor-pointer focus-within:border-[#004ac6] transition-colors">
+                <div class="relative bg-white rounded-lg border border-[#c3c6d7] cursor-pointer focus-within:border-[#004ac6] transition-colors shadow-sm">
                     <select name="status" onchange="this.form.submit()" class="w-full appearance-none bg-transparent outline-none p-2 px-3 text-[#191b23] text-sm cursor-pointer">
                         <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Statuses</option>
                         <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -58,7 +58,7 @@
                 <thead class="bg-[#f3f3fe] border-b border-[rgba(195,198,215,0.50)] text-[#505f76] text-[13px] font-semibold tracking-[0.65px]">
                     <tr>
                         <th class="py-3 px-4 w-10 text-center">
-                            <input type="checkbox" class="w-4 h-4 rounded border-[#c3c6d7] text-[#004ac6] focus:ring-[#004ac6]">
+                            <input type="checkbox" id="selectAllCheckbox" onclick="toggleAll(this)" class="w-4 h-4 rounded border-[#c3c6d7] text-[#004ac6] focus:ring-[#004ac6] cursor-pointer transition-colors">
                         </th>
                         <th class="py-3 px-4">ID</th>
                         <th class="py-3 px-4">Student Name</th>
@@ -91,14 +91,12 @@
                     
                     <tr class="border-b border-[#e1e2ed] hover:bg-gray-50 transition-colors">
                         <td class="py-4 px-4 text-center">
-                            <input type="checkbox" class="w-4 h-4 rounded border-[#c3c6d7] text-[#004ac6] focus:ring-[#004ac6]">
+                            <input type="checkbox" class="complaint-checkbox w-4 h-4 rounded border-[#c3c6d7] text-[#004ac6] focus:ring-[#004ac6] cursor-pointer transition-colors" value="{{ $complaint->id }}" onclick="checkIndeterminate()">
                         </td>
                         <td class="py-4 px-4 font-medium">#{{ $complaint->ticket_no }}</td>
                         <td class="py-4 px-4 flex items-center gap-3">
                             @if($complaint->is_anonymous)
-                                <div class="bg-gray-200 text-gray-500 font-bold text-xs w-8 h-8 flex items-center justify-center rounded-full">
-                                    AN
-                                </div>
+                                <div class="bg-gray-200 text-gray-500 font-bold text-xs w-8 h-8 flex items-center justify-center rounded-full">AN</div>
                                 <div class="flex flex-col">
                                     <span class="font-medium">Anonymous User</span>
                                     <span class="text-[#505f76] text-xs">Hidden</span>
@@ -131,9 +129,12 @@
                                 <span class="text-xs font-medium">{{ $complaint->status }}</span>
                             </div>
                         </td>
-                        <td class="py-4 px-4 text-[#505f76] text-sm">{{ $complaint->created_at->format('M d, Y') }}</td>
+                        <td class="py-4 px-4 text-[#505f76] text-sm">{{ $complaint->created_at ? $complaint->created_at->format('M d, Y') : '-' }}</td>
                         <td class="py-4 px-4 text-right">
-                            <a href="{{ route('admin.complaints.show', $complaint->id) }}" class="text-[#004ac6] hover:underline font-semibold text-[13px] tracking-[0.65px]">Review</a>
+                            <a href="{{ route('admin.complaints.show', $complaint->id) }}" class="text-[#004ac6] hover:text-blue-800 font-semibold text-[13px] tracking-[0.65px] flex items-center justify-end gap-1 transition-colors">
+                                Review
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </a>
                         </td>
                     </tr>
                     @empty
@@ -153,12 +154,26 @@
                 to <span class="font-bold text-[#191b23]">{{ $complaints->lastItem() ?? 0 }}</span> 
                 of <span class="font-bold text-[#191b23]">{{ $complaints->total() }}</span> results
             </div>
-            
             <div class="flex items-center gap-1">
                 {{ $complaints->links('pagination::tailwind') }}
             </div>
         </div>
     </div>
-
 </div>
+
+<script>
+    function toggleAll(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.complaint-checkbox');
+        checkboxes.forEach(cb => { cb.checked = masterCheckbox.checked; });
+    }
+    function checkIndeterminate() {
+        const masterCheckbox = document.getElementById('selectAllCheckbox');
+        const checkboxes = document.querySelectorAll('.complaint-checkbox');
+        if (checkboxes.length === 0) return;
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        const someChecked = Array.from(checkboxes).some(c => c.checked);
+        masterCheckbox.checked = allChecked;
+        masterCheckbox.indeterminate = someChecked && !allChecked;
+    }
+</script>
 @endsection

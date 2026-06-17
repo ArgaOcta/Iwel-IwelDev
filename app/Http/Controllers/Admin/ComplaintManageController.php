@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Complaint;
 use App\Models\Category;
-use App\Models\ComplaintResponse; // Pastikan model ini di-import
+use App\Models\ComplaintResponse;
+use App\Models\AuditLog; 
+
 
 class ComplaintManageController extends Controller
 {
@@ -51,14 +53,14 @@ class ComplaintManageController extends Controller
      */
     public function show($id)
     {
-        // Pastikan memanggil relasi 'responses.user' agar timeline bisa menampilkan nama pembalas
-        $complaint = Complaint::with(['user', 'category', 'attachments', 'responses.user'])->findOrFail($id);
+        // Memanggil relasi responses dan auditLogs
+        $complaint = Complaint::with(['user', 'category', 'attachments', 'responses.user', 'auditLogs'])->findOrFail($id);
 
         return view('admin.complaintresolution', compact('complaint'));
     }
 
     /**
-     * FUNGSI BARU: Menyimpan balasan/tanggapan dari Admin
+     * Menyimpan balasan/tanggapan dari Admin
      */
     public function storeResponse(Request $request, $id)
     {
@@ -71,16 +73,58 @@ class ComplaintManageController extends Controller
         // Simpan data balasan ke database
         ComplaintResponse::create([
             'complaint_id' => $complaint->id,
-            'user_id' => auth()->id(), // Mengambil ID admin yang sedang login
+            'user_id' => auth()->id(),
             'message' => $request->response,
             'is_internal' => $request->has('is_internal') ? true : false,
         ]);
 
-        // Opsional cerdas: Jika status masih 'Pending', ubah otomatis menjadi 'In Progress' karena admin sudah mulai merespons
+        // Opsional cerdas: Jika status masih 'Pending', ubah otomatis menjadi 'In Progress'
         if ($complaint->status === 'Pending') {
-            $complaint->update(['status' => 'In Progress']);
+            $oldStatus = $complaint->status;
+            $newStatus = 'In Progress';
+            
+            $complaint->update(['status' => $newStatus]);
+            
+            // PERBAIKAN: Menambahkan field 'action'
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'complaint_id' => $complaint->id,
+                'action' => 'Auto Update (Admin Response)', // <--- Ini yang sebelumnya kurang
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+            ]);
         }
 
         return back()->with('success', 'Balasan berhasil diposting!');
+    }
+
+    /**
+     * Memperbarui Status Pengaduan secara Manual dan Mencatat Log 
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $complaint = Complaint::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:Pending,Reviewing,In Progress,Resolved,Rejected,Closed'
+        ]);
+
+        $oldStatus = $complaint->status;
+        $newStatus = $request->status;
+
+        if ($oldStatus !== $newStatus) {
+            $complaint->update(['status' => $newStatus]);
+
+            // PERBAIKAN: Menambahkan field 'action'
+            AuditLog::create([
+                'user_id' => auth()->id(),
+                'complaint_id' => $complaint->id,
+                'action' => 'Manual Status Update', // <--- Ini yang sebelumnya kurang
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+            ]);
+        }
+
+        return back()->with('success', 'Status pengaduan berhasil diperbarui.');
     }
 }

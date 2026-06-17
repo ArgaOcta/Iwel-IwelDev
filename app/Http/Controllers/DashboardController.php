@@ -33,7 +33,7 @@ class DashboardController extends Controller
         $chartData = [];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $chartLabels[] = $month->format('M'); // Menghasilkan 'Jan', 'Feb', dst.
+            $chartLabels[] = $month->format('M'); 
             $chartData[] = Complaint::where('user_id', $user->id)
                 ->whereMonth('created_at', $month->month)
                 ->whereYear('created_at', $month->year)
@@ -47,8 +47,25 @@ class DashboardController extends Controller
             'resolvedComplaints',
             'recentActivities',
             'recentSubmissions',
-            'chartLabels', // Kirim ke blade
-            'chartData'    // Kirim ke blade
+            'chartLabels',
+            'chartData'
         ));
+    }
+
+    // Fungsi Notifikasi Mahasiswa
+    public function notifications(Request $request)
+    {
+        $user = $request->user();
+        
+        // Ambil riwayat audit (perubahan status oleh admin) untuk tiket milik mahasiswa ini
+        $notifications = \App\Models\AuditLog::with(['complaint', 'user'])
+            ->whereHas('complaint', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->where('user_id', '!=', $user->id) // Hanya ambil aktivitas dari orang lain (Admin)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('mahasiswa.notification', compact('notifications'));
     }
 }

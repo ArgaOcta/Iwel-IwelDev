@@ -5,10 +5,7 @@
 @section('content')
     {{-- Hero --}}
     <section class="relative overflow-hidden bg-white px-6 pb-32 pt-24 max-sm:px-4 max-sm:pb-24 max-sm:pt-16">
-        <div
-            class="pointer-events-none absolute right-0 top-0 h-[620px] w-[640px] rounded-bl-full bg-[linear-gradient(223deg,rgba(219,225,255,1)_0%,rgba(219,225,255,0)_100%)] opacity-30"
-            aria-hidden="true"
-        ></div>
+        <div class="pointer-events-none absolute right-0 top-0 h-[620px] w-[640px] rounded-bl-full bg-[linear-gradient(223deg,rgba(219,225,255,1)_0%,rgba(219,225,255,0)_100%)] opacity-30" aria-hidden="true"></div>
 
         <div class="relative mx-auto grid max-w-[1232px] grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <div class="flex flex-col gap-6 pt-0.5">
@@ -23,15 +20,11 @@
                 </h1>
 
                 <p class="max-w-[512px] text-base leading-6 text-[#434655]">
-                    Student Complaint Management System (SCMS) menyediakan
-                    lingkungan yang terstruktur, aman, dan transparan untuk
-                    menyampaikan keluhan. Kami memprioritaskan de-eskalasi dan
-                    kejelasan, memastikan setiap suara didengar dan dilacak secara
-                    efisien.
+                    Student Complaint Management System (SCMS) menyediakan lingkungan yang terstruktur, aman, dan transparan untuk menyampaikan keluhan. Kami memprioritaskan de-eskalasi dan kejelasan, memastikan setiap suara didengar dan dilacak secara efisien.
                 </p>
 
                 <div class="flex flex-wrap gap-4 pt-2 max-sm:w-full max-sm:flex-col">
-                    <a href="#" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#004AC6] px-8 py-3 text-lg font-semibold leading-7 text-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-opacity hover:opacity-90 max-sm:w-full">
+                    <a href="{{ route('login') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#004AC6] px-8 py-3 text-lg font-semibold leading-7 text-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-opacity hover:opacity-90 max-sm:w-full">
                         Ajukan Pengaduan
                         <img src="{{ asset('assets/icons/arrow-right.svg') }}" alt="" width="16" height="16" class="block">
                     </a>
@@ -76,74 +69,12 @@
         <div class="mx-auto flex max-w-[1280px] flex-col items-center gap-16 px-6">
             <header class="flex max-w-[672px] flex-col gap-4 text-center">
                 <h2 class="text-[32px] font-bold leading-10 tracking-[-0.02em] text-[#191B23]">Pendekatan Modern untuk Resolusi</h2>
-                <p class="text-base leading-6 text-[#434655]">
-                    Kami merancang SCMS untuk menghilangkan hambatan dalam proses pelaporan,
-                    menyediakan antarmuka yang tenang dan terorganisir bagi mahasiswa dan administrator.
-                </p>
+                <p class="text-base leading-6 text-[#434655]">Kami merancang SCMS untuk menghilangkan hambatan dalam proses pelaporan.</p>
             </header>
-
             <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-[21px]">
-                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 pb-14 shadow-[0_4px_20px_rgba(0,0,0,0.04)] max-lg:pb-8">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#2563EB]">
-                        <img src="{{ asset('assets/icons/icon-platform.svg') }}" alt="" width="20" height="20" class="block">
-                    </div>
-                    <h3 class="pt-3 text-lg font-semibold leading-7 text-[#191B23]">Platform Resmi</h3>
-                    <p class="text-base leading-6 text-[#434655]">
-                        Saluran resmi yang diakui institusi untuk
-                        melaporkan masalah non-akademik dan
-                        administratif secara aman.
-                    </p>
-                </article>
-
-                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#D0E1FB]">
-                        <img src="{{ asset('assets/icons/icon-tracking.svg') }}" alt="" width="22" height="12" class="block">
-                    </div>
-                    <h3 class="pt-3 text-lg font-semibold leading-7 text-[#191B23]">Pelacakan Jelas</h3>
-                    <p class="text-base leading-6 text-[#434655]">
-                        Jangan pernah ragu di mana posisi laporan
-                        Anda. Terima notifikasi dan lihat perubahan
-                        status eksplisit dari pengiriman hingga
-                        penyelesaian.
-                    </p>
-                </article>
-
-                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-[#BC4800]">
-                        <img src="{{ asset('assets/icons/icon-transparency.svg') }}" alt="" width="22" height="15" class="block">
-                    </div>
-                    <h3 class="pt-3 text-lg font-semibold leading-7 text-[#191B23]">Transparansi Total</h3>
-                    <p class="text-base leading-6 text-[#434655]">
-                        Dibangun di atas kepercayaan. Semua
-                        tindakan dicatat, dan komunikasi terjadi
-                        langsung di dalam platform, memastikan
-                        akuntabilitas.
-                    </p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    {{-- CTA --}}
-    <section class="border-t border-[rgba(195,198,215,0.3)] bg-white px-6 py-24 lg:px-48">
-        <div class="mx-auto flex max-w-[1280px] flex-col items-center gap-6 px-6 text-center">
-            <h2 class="text-[32px] font-bold leading-10 tracking-[-0.02em] text-[#191B23]">Siap untuk menyuarakan aspirasi Anda?</h2>
-            <p class="max-w-[576px] text-base leading-6 text-[#434655]">
-                Bergabunglah dengan platform SCMS hari ini untuk melaporkan, melacak, dan
-                menyelesaikan masalah Anda dengan pihak administrasi secara aman.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4 pt-4 max-sm:w-full max-sm:flex-col">
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="inline-flex items-center justify-center rounded-lg bg-[#004AC6] px-8 py-3 text-lg font-semibold leading-7 text-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-opacity hover:opacity-90 max-sm:w-full">Buat Akun</a>
-                @else
-                    <a href="#" class="inline-flex items-center justify-center rounded-lg bg-[#004AC6] px-8 py-3 text-lg font-semibold leading-7 text-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-opacity hover:opacity-90 max-sm:w-full">Buat Akun</a>
-                @endif
-
-                @if (Route::has('login'))
-                    <a href="{{ route('login') }}" class="inline-flex items-center justify-center rounded-lg bg-[#EDEDF9] px-8 py-3 text-lg font-semibold leading-7 text-[#191B23] transition-opacity hover:opacity-90 max-sm:w-full">Masuk</a>
-                @else
-                    <a href="#" class="inline-flex items-center justify-center rounded-lg bg-[#EDEDF9] px-8 py-3 text-lg font-semibold leading-7 text-[#191B23] transition-opacity hover:opacity-90 max-sm:w-full">Masuk</a>
-                @endif
+                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"><h3 class="pt-3 text-lg font-semibold">Platform Resmi</h3></article>
+                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"><h3 class="pt-3 text-lg font-semibold">Pelacakan Jelas</h3></article>
+                <article class="flex flex-col gap-3 rounded-xl border border-[#EDEDF9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"><h3 class="pt-3 text-lg font-semibold">Transparansi Total</h3></article>
             </div>
         </div>
     </section>

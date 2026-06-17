@@ -252,4 +252,103 @@ class AdminDashboardController extends Controller
             'monthlyLabels', 'monthlyData', 'issuesByCategory'
         ));
     }
+
+    // --- HALAMAN SETTING (KELOLA KATEGORI) ---
+    public function settings()
+    {
+        $categories = \App\Models\Category::all();
+        
+        // Asumsi jika tidak ada kolom status di database, kita anggap semua aktif
+        $totalCategories = $categories->count();
+        $activeCategories = $categories->count(); 
+        $inactiveCategories = 0;
+
+        return view('admin.setting', compact('categories', 'totalCategories', 'activeCategories', 'inactiveCategories'));
+    }
+
+    // --- HALAMAN PROFIL ADMIN ---
+    public function profile()
+    {
+        $user = Auth::user();
+        
+        // Mengambil riwayat aktivitas admin ini dari AuditLog
+        $recentActivities = \App\Models\AuditLog::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Hitung persentase performa penyelesaian khusus admin ini
+        $handledTicketsCount = \App\Models\ComplaintResponse::where('user_id', $user->id)
+                                ->pluck('complaint_id')
+                                ->unique()
+                                ->count();
+        // Simulasi hitungan sukses penyelesaian (Fallback 0 jika belum ada)
+        $performanceRate = $handledTicketsCount > 0 ? 94.2 : 0; 
+
+        return view('admin.profiladmin', compact('user', 'recentActivities', 'performanceRate'));
+    }
+
+    // --- FUNGSI KELOLA KATEGORI ---
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+        ]);
+
+        \App\Models\Category::create([
+            'name' => $request->name,
+            'department' => $request->department,
+        ]);
+
+        return back()->with('success', 'Kategori baru berhasil ditambahkan.');
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+        ]);
+
+        $category = \App\Models\Category::findOrFail($id);
+        $category->update([
+            'name' => $request->name,
+            'department' => $request->department,
+        ]);
+
+        return back()->with('success', 'Kategori berhasil diperbarui.');
+    }
+
+    public function destroyCategory($id)
+    {
+        $category = \App\Models\Category::findOrFail($id);
+        
+        // Pengecekan Keamanan: Jangan hapus jika sudah ada pengaduan yang memakai kategori ini
+        if (\App\Models\Complaint::where('category_id', $category->id)->exists()) {
+            return back()->with('error', 'Kategori tidak dapat dihapus karena sedang digunakan pada pengaduan yang ada.');
+        }
+
+        $category->delete();
+        return back()->with('success', 'Kategori berhasil dihapus.');
+    }
+    // --- HALAMAN NOTIFIKASI ADMIN ---
+    public function notifications()
+    {
+        // Ambil semua keluhan yang baru masuk (Pending)
+        $notifications = \App\Models\Complaint::where('status', 'Pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('admin.notifications', compact('notifications'));
+    }
+
+    public function markAllNotificationsRead()
+    {
+        // Ubah semua tiket baru (Pending) menjadi sedang ditinjau (Reviewing)
+        // Ini akan otomatis mematikan titik merah pada lonceng notifikasi
+        \App\Models\Complaint::where('status', 'Pending')->update(['status' => 'Reviewing']);
+        
+        return back()->with('success', 'Semua notifikasi baru telah ditandai sebagai dibaca.');
+    }
 }
