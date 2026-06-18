@@ -9,7 +9,6 @@ use App\Models\Category;
 use App\Models\ComplaintResponse;
 use App\Models\AuditLog; 
 
-
 class ComplaintManageController extends Controller
 {
     /**
@@ -85,11 +84,11 @@ class ComplaintManageController extends Controller
             
             $complaint->update(['status' => $newStatus]);
             
-            // PERBAIKAN: Menambahkan field 'action'
+            // Mencatat log perubahan status
             AuditLog::create([
                 'user_id' => auth()->id(),
                 'complaint_id' => $complaint->id,
-                'action' => 'Auto Update (Admin Response)', // <--- Ini yang sebelumnya kurang
+                'action' => 'Auto Update (Admin Response)',
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
             ]);
@@ -115,11 +114,11 @@ class ComplaintManageController extends Controller
         if ($oldStatus !== $newStatus) {
             $complaint->update(['status' => $newStatus]);
 
-            // PERBAIKAN: Menambahkan field 'action'
+            // Mencatat log perubahan status manual
             AuditLog::create([
                 'user_id' => auth()->id(),
                 'complaint_id' => $complaint->id,
-                'action' => 'Manual Status Update', // <--- Ini yang sebelumnya kurang
+                'action' => 'Manual Status Update', 
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
             ]);

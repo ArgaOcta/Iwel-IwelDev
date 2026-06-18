@@ -29,7 +29,7 @@
     $unreadCount = \App\Models\Complaint::where('status', 'Pending')->count();
 @endphp
 
-<div class="flex flex-row items-start min-h-screen w-full relative">
+<div x-data="{ showLogoutModal: false }" class="flex flex-row items-start min-h-screen w-full relative">
   
   <div class="bg-white border-r border-[#c3c6d7] flex flex-col justify-between shrink-0 w-[260px] h-screen fixed left-0 top-0 z-50 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <div>
@@ -79,13 +79,10 @@
 
     <div class="w-full">
       <div class="border-t border-[#e1e2ed] p-4">
-        <form method="POST" action="{{ route('logout') }}" class="w-full">
-          @csrf
-          <button type="submit" class="w-full rounded-lg p-2.5 px-3 flex flex-row gap-3 items-center hover:bg-red-50 text-[#ba1a1a] transition-colors group">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" class="group-hover:scale-110 transition-transform"><path d="M1.66667 15C1.20833 15 0.815972 14.8368 0.489583 14.5104C0.163194 14.184 0 13.7917 0 13.3333V1.66667C0 1.20833 0.163194 0.815972 0.489583 0.489583C0.815972 0.163194 1.20833 0 1.66667 0H7.5V1.66667H1.66667V13.3333H7.5V15H1.66667ZM10.8333 11.6667L9.6875 10.4583L11.8125 8.33333H5V6.66667H11.8125L9.6875 4.54167L10.8333 3.33333L15 7.5L10.8333 11.6667Z" fill="currentColor"/></svg>
-            <span class="font-medium text-sm">Logout</span>
-          </button>
-        </form>
+        <button @click="showLogoutModal = true" type="button" class="w-full rounded-lg p-2.5 px-3 flex flex-row gap-3 items-center hover:bg-red-50 text-[#ba1a1a] transition-colors group">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" class="group-hover:scale-110 transition-transform"><path d="M1.66667 15C1.20833 15 0.815972 14.8368 0.489583 14.5104C0.163194 14.184 0 13.7917 0 13.3333V1.66667C0 1.20833 0.163194 0.815972 0.489583 0.489583C0.815972 0.163194 1.20833 0 1.66667 0H7.5V1.66667H1.66667V13.3333H7.5V15H1.66667ZM10.8333 11.6667L9.6875 10.4583L11.8125 8.33333H5V6.66667H11.8125L9.6875 4.54167L10.8333 3.33333L15 7.5L10.8333 11.6667Z" fill="currentColor"/></svg>
+          <span class="font-medium text-sm">Logout</span>
+        </button>
       </div>
     </div>
   </div>
@@ -121,6 +118,36 @@
     </main>
 
   </div>
+
+  <div x-show="showLogoutModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm" x-transition.opacity>
+    <div @click.away="showLogoutModal = false" 
+         class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden flex flex-col transform transition-all" 
+         x-transition:enter="transition ease-out duration-300" 
+         x-transition:enter-start="opacity-0 translate-y-8 sm:scale-95" 
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+         x-transition:leave="transition ease-in duration-200" 
+         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+         x-transition:leave-end="opacity-0 translate-y-8 sm:scale-95">
+        
+        <div class="p-8 flex flex-col items-center text-center gap-4">
+            <div class="w-16 h-16 bg-[rgba(186,26,26,0.1)] rounded-full flex items-center justify-center text-[#ba1a1a] mb-2 animate-bounce" style="animation-duration: 2s;">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </div>
+            <h3 class="text-xl font-bold text-[#191b23]">Konfirmasi Keluar</h3>
+            <p class="text-[#434655] text-sm leading-relaxed">Apakah Anda yakin ingin keluar dari sesi ini? Anda harus login kembali untuk masuk.</p>
+        </div>
+        <div class="bg-[#faf8ff] px-8 py-5 flex gap-3 justify-center w-full border-t border-[rgba(195,198,215,0.3)]">
+            <button @click="showLogoutModal = false" type="button" class="px-5 py-2.5 bg-white border border-[#c3c6d7] rounded-lg text-sm font-semibold text-[#434655] hover:bg-gray-50 hover:shadow-sm transition-all w-1/2 active:scale-95">Batal</button>
+            
+            <form method="POST" action="{{ route('logout') }}" class="w-1/2">
+                @csrf
+                <button type="submit" class="px-5 py-2.5 bg-[#ba1a1a] text-white rounded-lg text-sm font-semibold hover:bg-[#93000a] transition-all shadow-sm hover:shadow-md w-full active:scale-95">Ya, Keluar</button>
+            </form>
+
+        </div>
+    </div>
+  </div>
+
 </div>
 </body>
 </html>

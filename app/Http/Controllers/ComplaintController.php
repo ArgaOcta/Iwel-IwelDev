@@ -47,7 +47,6 @@ class ComplaintController extends Controller
 
     public function create()
     {
-        // AMBIL KATEGORI DARI DATABASE
         $categories = Category::all();
         return view('mahasiswa.submitcomplaint', compact('categories'));
     }
@@ -60,7 +59,8 @@ class ComplaintController extends Controller
             'description' => 'required|string',
             'location' => 'nullable|string|max:255',
             'priority' => 'required|in:Rendah,Sedang,Tinggi',
-            'attachment.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120',
+            'attachment' => 'nullable|array|max:5', // Batasi array maksimal 5 file
+            'attachment.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120',
         ]);
 
         $ticket_no = 'TCK-' . strtoupper(Str::random(6));
@@ -107,5 +107,21 @@ class ComplaintController extends Controller
         ]);
 
         return back()->with('success', 'Balasan berhasil dikirim!');
+    }
+
+    // FUNGSI BARU: Menyimpan Rating CSAT
+    public function rate(Request $request, $id)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
+
+        $complaint = Complaint::where('user_id', auth()->id())
+            ->whereIn('status', ['Resolved', 'Closed'])
+            ->findOrFail($id);
+
+        $complaint->update(['rating' => $request->rating]);
+
+        return back()->with('success', 'Terima kasih! Penilaian Anda membantu kami meningkatkan kualitas layanan institusi.');
     }
 }

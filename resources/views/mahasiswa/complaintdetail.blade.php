@@ -114,13 +114,12 @@
             <div class="bg-white rounded-xl border border-[rgba(195,198,215,0.30)] flex flex-col h-[500px] shadow-sm">
                 <div class="bg-[#faf8ff] rounded-t-xl border-b border-[rgba(195,198,215,0.30)] p-4 flex justify-between items-center shrink-0">
                     <div class="flex items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M20 20L16 16H6C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V13H15C15.55 13 16.0208 12.8042 16.4125 12.4125C16.8042 12.0208 17 11.55 17 11V4H18C18.55 4 19.0208 4.19583 19.4125 4.5875C19.8042 4.97917 20 5.45 20 6V20ZM2 10.175L3.175 9H13V2H2V10.175ZM0 15V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H13C13.55 0 14.0208 0.195833 14.4125 0.5875C14.8042 0.979167 15 1.45 15 2V9C15 9.55 14.8042 10.0208 14.4125 10.4125C14.0208 10.8042 13.5 11 13 11H4L0 15ZM2 9V2V9Z" fill="#004AC6"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M20 20L16 16H6C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V13H15C15.55 13 16.0208 12.8042 16.4125 12.4125C16.8042 12.0208 17 11.55 17 11V4H18C18.55 4 19.0208 4.19583 19.4125 4.5875C19.8042 4.97917 20 5.45 20 6V20ZM2 10.175L3.175 9H13V2H2V10.175ZM0 15V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H13C13.55 0 14.0208 0.195833 14.4125 0.5875C14.8042 0.979167 15 1.45 15 2V9C15 9.55 14.8042 10.0208 14.4125 10.4125C14.0208 10.8042 13.55 11 13 11H4L0 15ZM2 9V2V9Z" fill="#004AC6"/></svg>
                         <h2 class="text-[#191b23] font-semibold text-lg">Diskusi & Tanggapan</h2>
                     </div>
                 </div>
 
                 <div class="bg-[#faf8ff] flex-1 p-4 overflow-y-auto flex flex-col gap-4 relative">
-                    
                     <div class="text-center mb-4">
                         <span class="bg-[#ededf9] text-[#434655] text-[11px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
                             LAPORAN DIBUAT - {{ $complaint->created_at?->format('d M, H:i') ?? 'N/A' }}
@@ -136,9 +135,7 @@
                     </div>
                     
                     @foreach($complaint->responses->sortBy('created_at') as $reply)
-                        
                         @if(!$reply->is_internal)
-                            
                             @if($reply->user_id == auth()->id())
                                 <div class="flex flex-row gap-2 items-end justify-end self-end max-w-[85%] mt-2">
                                     <div class="bg-[#2563eb] rounded-tl-2xl rounded-tr-2xl rounded-br-sm rounded-bl-2xl p-3 flex flex-col gap-1 shadow-sm text-white text-sm">
@@ -159,10 +156,8 @@
                                     </div>
                                 </div>
                             @endif
-
                         @endif
                     @endforeach
-
                 </div>
 
                 @if(in_array($complaint->status, ['Resolved', 'Closed']))
@@ -207,6 +202,47 @@
                     </div>
                 </div>
             </div>
+
+            @if(in_array($complaint->status, ['Resolved', 'Closed']))
+                <div class="bg-[#faf8ff] rounded-xl border border-[#c3c6d7] p-6 shadow-sm flex flex-col gap-3">
+                    <h3 class="text-[#191b23] font-bold text-base">Tingkat Kepuasan (CSAT)</h3>
+                    @if($complaint->rating)
+                        <p class="text-sm text-[#434655]">Terima kasih! Anda memberikan nilai:</p>
+                        <div class="flex gap-1 text-yellow-400">
+                            @for($i = 1; $i <= 5; $i++)
+                                <svg width="24" height="24" fill="{{ $i <= $complaint->rating ? 'currentColor' : 'none' }}" stroke="{{ $i <= $complaint->rating ? 'none' : '#c3c6d7' }}" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            @endfor
+                        </div>
+                    @else
+                        <p class="text-sm text-[#434655]">Seberapa puas Anda dengan penyelesaian pengaduan ini?</p>
+                        <form action="{{ route('complaint.rate', $complaint->id) }}" method="POST" class="flex flex-col gap-3">
+                            @csrf
+                            <div class="flex flex-row-reverse justify-end gap-1 rating-stars">
+                                <input type="radio" id="star5" name="rating" value="5" class="hidden peer" required />
+                                <label for="star5" class="cursor-pointer text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-400 transition-colors"><svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></label>
+                                
+                                <input type="radio" id="star4" name="rating" value="4" class="hidden peer" />
+                                <label for="star4" class="cursor-pointer text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-400 transition-colors"><svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></label>
+                                
+                                <input type="radio" id="star3" name="rating" value="3" class="hidden peer" />
+                                <label for="star3" class="cursor-pointer text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-400 transition-colors"><svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></label>
+                                
+                                <input type="radio" id="star2" name="rating" value="2" class="hidden peer" />
+                                <label for="star2" class="cursor-pointer text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-400 transition-colors"><svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></label>
+                                
+                                <input type="radio" id="star1" name="rating" value="1" class="hidden peer" />
+                                <label for="star1" class="cursor-pointer text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-400 transition-colors"><svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></label>
+                            </div>
+                            <style>
+                                .rating-stars label:hover, .rating-stars label:hover ~ label, .rating-stars input:checked ~ label {
+                                    color: #facc15; /* Tailwind yellow-400 */
+                                }
+                            </style>
+                            <button type="submit" class="mt-2 bg-[#004ac6] text-white text-sm font-semibold rounded-lg py-2 hover:bg-blue-800 transition">Kirim Penilaian</button>
+                        </form>
+                    @endif
+                </div>
+            @endif
 
             <div class="bg-white rounded-xl border border-[rgba(195,198,215,0.30)] p-6 shadow-sm">
                 <div class="flex items-center gap-2 mb-6">

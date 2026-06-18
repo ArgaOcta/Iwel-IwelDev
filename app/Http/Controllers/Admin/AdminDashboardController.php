@@ -117,9 +117,83 @@ class AdminDashboardController extends Controller
     }
     
     /**
-     * Menampilkan Halaman Service Evaluation (Reports & Analytics)
+     * Menampilkan Halaman Institutional Analytics (Reports)
      */
-    public function reports(Request $request) // Pastikan ada (Request $request)
+    public function reports(Request $request) 
+    {
+        // 1. Total Complaints (Sesuai rentang waktu yang dipilih)
+        $days = $request->get('range', 30);
+        $startDate = Carbon::now()->subDays($days);
+        
+        $totalComplaints = Complaint::where('created_at', '>=', $startDate)->count();
+        $totalResolved = Complaint::whereIn('status', ['Resolved', 'Closed'])
+            ->where('created_at', '>=', $startDate)->count();
+
+        // 2. SLA Performance (Resolusi < 7 Hari)
+        $withinSLA = Complaint::whereIn('status', ['Resolved', 'Closed'])
+            ->where('created_at', '>=', $startDate)
+            ->whereRaw('TIMESTAMPDIFF(DAY, created_at, updated_at) <= 7')
+            ->count();
+        
+        $slaRate = $totalResolved > 0 ? round(($withinSLA / $totalResolved) * 100) : 0;
+        
+        // 3. Initial Response Time (< 24 Jam)
+        $fastResponseCount = DB::table('complaints')
+            ->join('complaint_responses', 'complaints.id', '=', 'complaint_responses.complaint_id')
+            ->where('complaints.created_at', '>=', $startDate)
+            ->whereRaw('TIMESTAMPDIFF(HOUR, complaints.created_at, complaint_responses.created_at) <= 24')
+            ->select('complaints.id')
+            ->distinct()
+            ->count();
+        
+        $initialResponseRate = $totalComplaints > 0 ? round(($fastResponseCount / $totalComplaints) * 100) : 0;
+
+        // 4. Escalated Cases (Tiket yang diprioritaskan 'Tinggi' dan belum selesai)
+        $escalatedCases = Complaint::whereIn('status', ['Pending', 'Reviewing'])
+            ->where('priority', 'Tinggi')
+            ->where('created_at', '>=', $startDate)
+            ->count();
+
+        // 5. Data Chart (Monthly Volume - Dinamis berdasarkan range)
+        $monthlyLabels = [];
+        $monthlyData = [];
+        $chartStep = max(1, floor($days / 6)); // Bagi grafik menjadi 6 kolom
+
+        for ($i = 5; $i >= 0; $i--) {
+            $startRange = Carbon::now()->subDays(($i + 1) * $chartStep);
+            $endRange = Carbon::now()->subDays($i * $chartStep);
+            
+            $monthlyLabels[] = $endRange->format($days <= 30 ? 'd M' : 'M Y');
+            $monthlyData[] = Complaint::whereBetween('created_at', [$startRange, $endRange])->count();
+        }
+
+        // 6. Data Tabel Kategori/Departemen
+        $issuesByCategory = DB::table('complaints')
+            ->join('categories', 'complaints.category_id', '=', 'categories.id')
+            ->where('complaints.created_at', '>=', $startDate)
+            ->select('categories.name as category_name', 'categories.department as department', DB::raw('count(complaints.id) as total'))
+            ->groupBy('categories.id', 'categories.name', 'categories.department')
+            ->orderByDesc('total')
+            ->get();
+
+        // Fallback Data jika Kosong
+        if ($issuesByCategory->isEmpty()) {
+            $issuesByCategory = collect([
+                (object)['category_name' => 'Belum ada data', 'department' => 'None', 'total' => 0],
+            ]);
+        }
+
+        // PERBAIKAN: Kembalikan view admin.report (Institutional Analytics)
+        return view('admin.report', compact(
+            'totalComplaints', 'slaRate', 'initialResponseRate', 'escalatedCases', 
+            'monthlyLabels', 'monthlyData', 'issuesByCategory'
+        ));
+    }
+
+    /**
+     * Menampilkan Halaman Service Evaluation (Performance)
+     */
+    public function performanceReports(Request $request)
     {
         // Tangkap filter hari dari dropdown (default: 30 hari)
         $days = $request->get('range', 30);
@@ -154,103 +228,31 @@ class AdminDashboardController extends Controller
         // Fallback jika database masih kosong agar UI tidak rusak
         if ($departmentStats->isEmpty()) {
             $departmentStats = collect([
-                (object)[ 'department' => 'Facilities Management', 'total_tickets' => 89, 'open_tickets' => 34, 'closed_tickets' => 55, 'resolution_rate' => 61, 'status' => 'Lagging' ],
-                (object)[ 'department' => 'Finance Office', 'total_tickets' => 67, 'open_tickets' => 15, 'closed_tickets' => 52, 'resolution_rate' => 77, 'status' => 'Optimal' ],
-                (object)[ 'department' => 'IT Services', 'total_tickets' => 112, 'open_tickets' => 8, 'closed_tickets' => 104, 'resolution_rate' => 92, 'status' => 'Optimal' ],
+                (object)[ 'department' => 'Data Belum Tersedia', 'total_tickets' => 0, 'open_tickets' => 0, 'closed_tickets' => 0, 'resolution_rate' => 0, 'status' => 'Lagging' ],
             ]);
         }
 
-        // 3. Data Grafik Rata-rata Waktu Penyelesaian (Tetap 6 Bulan Terakhir untuk tren)
+        // 3. Data Grafik Rata-rata Waktu Penyelesaian (Dinamis berdasarkan dropdown)
         $chartLabels = [];
         $chartData = [];
+        $step = max(1, floor($days / 6));
+
         for ($i = 5; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i);
-            $chartLabels[] = $month->format('M');
+            $start = Carbon::now()->subDays(($i + 1) * $step);
+            $end = Carbon::now()->subDays($i * $step);
             
-            $avg = Complaint::whereMonth('created_at', $month->month)
-                ->whereYear('created_at', $month->year)
-                ->whereIn('status', ['Resolved', 'Closed'])
-                ->select(DB::raw('AVG(TIMESTAMPDIFF(DAY, created_at, updated_at)) as avg_time'))
-                ->first()->avg_time ?? 0;
+            $chartLabels[] = $end->format($days <= 30 ? 'd M' : 'M Y');
             
-            $chartData[] = round($avg, 1);
+            $avgRes = Complaint::whereIn('status', ['Resolved', 'Closed'])
+                ->whereBetween('created_at', [$start, $end])
+                ->select(DB::raw('AVG(TIMESTAMPDIFF(DAY, created_at, updated_at)) as avg_days'))
+                ->first()->avg_days ?? 0;
+            
+            $chartData[] = round($avgRes, 1);
         }
 
+        // PERBAIKAN: Kembalikan view admin.serviceevaluation (Service Evaluation)
         return view('admin.serviceevaluation', compact('needsAttentionCount', 'departmentStats', 'chartLabels', 'chartData'));
-    }
-
-    /**
-     * Menampilkan Halaman Reports (SLA Performance & Volume)
-     */
-    public function performanceReports(Request $request)
-    {
-        // 1. Total Complaints (Sesuai rentang waktu yang dipilih)
-        $days = $request->get('range', 30);
-        $startDate = Carbon::now()->subDays($days);
-        
-        $totalComplaints = Complaint::where('created_at', '>=', $startDate)->count();
-        $totalResolved = Complaint::whereIn('status', ['Resolved', 'Closed'])
-            ->where('created_at', '>=', $startDate)->count();
-
-        // 2. SLA Performance (Resolusi < 7 Hari)
-        $withinSLA = Complaint::whereIn('status', ['Resolved', 'Closed'])
-            ->where('created_at', '>=', $startDate)
-            ->whereRaw('TIMESTAMPDIFF(DAY, created_at, updated_at) <= 7')
-            ->count();
-        
-        $slaRate = $totalResolved > 0 ? round(($withinSLA / $totalResolved) * 100) : 0;
-        
-        // 3. Initial Response Time (< 24 Jam)
-        // Kita menggunakan tabel complaint_responses untuk melihat kapan balasan pertama admin
-        $fastResponseCount = DB::table('complaints')
-            ->join('complaint_responses', 'complaints.id', '=', 'complaint_responses.complaint_id')
-            ->where('complaints.created_at', '>=', $startDate)
-            ->whereRaw('TIMESTAMPDIFF(HOUR, complaints.created_at, complaint_responses.created_at) <= 24')
-            ->select('complaints.id')
-            ->distinct()
-            ->count();
-        
-        $initialResponseRate = $totalComplaints > 0 ? round(($fastResponseCount / $totalComplaints) * 100) : 0;
-
-        // 4. Escalated Cases (Tiket yang diprioritaskan 'Tinggi' dan belum selesai)
-        $escalatedCases = Complaint::whereIn('status', ['Pending', 'Reviewing'])
-            ->where('priority', 'Tinggi')
-            ->where('created_at', '>=', $startDate)
-            ->count();
-
-        // 5. Data Chart (Monthly Volume - 6 Bulan Terakhir)
-        $monthlyLabels = [];
-        $monthlyData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i);
-            $monthlyLabels[] = $month->format('M');
-            $monthlyData[] = Complaint::whereMonth('created_at', $month->month)
-                ->whereYear('created_at', $month->year)
-                ->count();
-        }
-
-        // 6. Data Tabel Kategori/Departemen
-        $issuesByCategory = DB::table('complaints')
-            ->join('categories', 'complaints.category_id', '=', 'categories.id')
-            ->where('complaints.created_at', '>=', $startDate)
-            ->select('categories.name as category_name', 'categories.department as department', DB::raw('count(complaints.id) as total'))
-            ->groupBy('categories.id', 'categories.name', 'categories.department')
-            ->orderByDesc('total')
-            ->get();
-
-        // Fallback Data jika Kosong
-        if ($issuesByCategory->isEmpty()) {
-            $issuesByCategory = collect([
-                (object)['category_name' => 'Fasilitas Kelas', 'department' => 'Facilities', 'total' => 24],
-                (object)['category_name' => 'Kantin', 'department' => 'Facilities', 'total' => 12],
-                (object)['category_name' => 'SPP', 'department' => 'Finance', 'total' => 45],
-            ]);
-        }
-
-        return view('admin.report', compact(
-            'totalComplaints', 'slaRate', 'initialResponseRate', 'escalatedCases', 
-            'monthlyLabels', 'monthlyData', 'issuesByCategory'
-        ));
     }
 
     // --- HALAMAN SETTING (KELOLA KATEGORI) ---

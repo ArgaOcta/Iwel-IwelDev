@@ -4,14 +4,74 @@
 @section('content')
 
 @php
-    // Menyiapkan daftar list "Needs Attention" secara dinamis dari database
-    $needsAttentionList = collect($departmentStats ?? [])->filter(function($item) {
+    // --- MENGAMBIL DATA DINAMIS HARUS DIULANG DI FILE INI ---
+    $days = request('range', 30);
+    $startDate = \Carbon\Carbon::now()->subDays($days);
+
+    $departmentStats = \Illuminate\Support\Facades\DB::table('complaints')
+        ->join('categories', 'complaints.category_id', '=', 'categories.id')
+        ->where('complaints.created_at', '>=', $startDate)
+        ->select(
+            'categories.department',
+            \Illuminate\Support\Facades\DB::raw('SUM(CASE WHEN complaints.status IN ("Pending", "Reviewing", "In Progress") THEN 1 ELSE 0 END) as open_tickets'),
+            \Illuminate\Support\Facades\DB::raw('SUM(CASE WHEN complaints.status IN ("Resolved", "Closed") THEN 1 ELSE 0 END) as closed_tickets'),
+            \Illuminate\Support\Facades\DB::raw('ROUND(AVG(TIMESTAMPDIFF(DAY, complaints.created_at, complaints.updated_at)), 1) as avg_days'),
+            \Illuminate\Support\Facades\DB::raw('SUM(CASE WHEN TIMESTAMPDIFF(DAY, complaints.created_at, complaints.updated_at) > 7 THEN 1 ELSE 0 END) as sla_breach')
+        )
+        ->groupBy('categories.department')
+        ->get();
+
+    if ($departmentStats->isEmpty()) {
+        $departmentStats = collect([
+            (object)['department' => 'Data Belum Tersedia', 'open_tickets' => 0, 'closed_tickets' => 0, 'avg_days' => 0, 'sla_breach' => 0],
+        ]);
+    }
+
+    $departmentStats = $departmentStats->map(function($stat) {
+        $stat->total = $stat->open_tickets + $stat->closed_tickets;
+        $stat->resolution_rate = $stat->total > 0 ? round(($stat->closed_tickets / $stat->total) * 100) : 0;
+        $stat->status = $stat->resolution_rate >= 75 ? 'Optimal' : 'Lagging';
+        $stat->breach_rate = $stat->closed_tickets > 0 ? round(($stat->sla_breach / $stat->closed_tickets) * 100) : 0;
+        return $stat;
+    });
+
+    $needsAttentionList = collect($departmentStats)->filter(function($item) {
         return $item->open_tickets > 0 || $item->status == 'Lagging';
     })->sortByDesc('open_tickets')->values();
+
+    // PERBAIKAN GRAFIK LINE: Dinamis Sesuai Dropdown
+    $chartLabels = [];
+    $chartData = [];
+    $step = max(1, floor($days / 6));
+
+    for ($i = 5; $i >= 0; $i--) {
+        $start = \Carbon\Carbon::now()->subDays(($i + 1) * $step);
+        $end = \Carbon\Carbon::now()->subDays($i * $step);
+        
+        $chartLabels[] = $end->format($days <= 30 ? 'd M' : 'M Y');
+        
+        $avgRes = \App\Models\Complaint::whereIn('status', ['Resolved', 'Closed'])
+            ->whereBetween('created_at', [$start, $end])
+            ->select(\Illuminate\Support\Facades\DB::raw('AVG(TIMESTAMPDIFF(DAY, created_at, updated_at)) as avg_days'))
+            ->first()->avg_days ?? 0;
+        
+        $chartData[] = round($avgRes, 1);
+    }
 @endphp
 
 <div class="flex flex-col gap-6 w-full max-w-[1400px] mx-auto">
     
+    <div class="w-full mb-2">
+        <div class="border-b border-[#c3c6d7] flex gap-6">
+            <a href="{{ route('admin.reports') }}" class="{{ request()->routeIs('admin.reports') ? 'border-[#004ac6] text-[#004ac6]' : 'border-transparent text-[#737686] hover:text-[#191b23] hover:border-[#c3c6d7]' }} border-b-2 pb-3 font-['Manrope-SemiBold',_sans-serif] text-[14px] font-semibold transition-colors">
+                Institutional Analytics
+            </a>
+            <a href="{{ route('admin.performance') }}" class="{{ request()->routeIs('admin.performance') ? 'border-[#004ac6] text-[#004ac6]' : 'border-transparent text-[#737686] hover:text-[#191b23] hover:border-[#c3c6d7]' }} border-b-2 pb-3 font-['Manrope-SemiBold',_sans-serif] text-[14px] font-semibold transition-colors">
+                Service Evaluation
+            </a>
+        </div>
+    </div>
+
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
         <div class="flex flex-col gap-1 w-full md:w-auto shrink-0">
             <h1 class="font-['Manrope-Bold',_sans-serif] text-[32px] leading-10 font-bold tracking-[-0.64px] whitespace-nowrap text-[#191b23]">Service Evaluation</h1>
@@ -19,6 +79,7 @@
         </div>
         
         <div class="flex flex-row flex-wrap items-center gap-3 w-full md:w-auto shrink-0 print:hidden">
+            
             <form method="GET" action="{{ route('admin.performance') }}" class="relative bg-white border border-[#c3c6d7] rounded-lg py-2 px-4 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition shadow-sm focus-within:border-[#004ac6]">
                 <svg width="15" height="15" viewBox="0 0 15 17" fill="currentColor"><path d="M1.66667 16.6667C1.20833 16.6667 0.815972 16.5035 0.489583 16.1771C0.163194 15.8507 0 15.4583 0 15V3.33333C0 2.875 0.163194 2.48264 0.489583 2.15625C0.815972 1.82986 1.20833 1.66667 1.66667 1.66667H2.5V0H4.16667V1.66667H10.8333V0H12.5V1.66667H13.3333C13.7917 1.66667 14.184 1.82986 14.5104 2.15625C14.8368 2.48264 15 2.875 15 3.33333V15C15 15.4583 14.8368 15.8507 14.5104 16.1771C14.184 16.5035 13.7917 16.6667 13.3333 16.6667H1.66667ZM1.66667 15H13.3333V6.66667H1.66667V15ZM1.66667 5H13.3333V3.33333H1.66667V5Z" fill="#191B23"/></svg>
                 <select name="range" onchange="this.form.submit()" class="bg-transparent text-[#191b23] font-semibold text-[13px] outline-none cursor-pointer appearance-none pr-5 z-10 w-[110px]">
@@ -175,7 +236,6 @@
 </div>
 
 <script>
-    // Fungsi Pencarian Departemen secara Live
     function filterTable() {
         let input = document.getElementById("searchInput").value.toUpperCase();
         let table = document.getElementById("departmentTable");
@@ -194,7 +254,6 @@
         }
     }
 
-    // Fungsi Render Chart
     document.addEventListener("DOMContentLoaded", function() {
         const ctxElem = document.getElementById('resolutionChart');
         if (ctxElem) {
@@ -223,7 +282,6 @@
                             pointHoverRadius: 6
                         },
                         {
-                            // Garis Target Lurus (3 Hari)
                             label: 'Target',
                             data: Array(labelsData.length).fill(3),
                             borderColor: 'rgba(186, 26, 26, 0.4)',

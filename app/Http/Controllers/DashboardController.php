@@ -13,13 +13,11 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
-        } elseif ($user->role === 'admin') {
+        // Mencegah double redirect
+        if ($user->role === 'superadmin' || $user->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
 
-        // Statistik Kartu Utama
         $totalComplaints = Complaint::where('user_id', $user->id)->count();
         $pendingComplaints = Complaint::where('user_id', $user->id)->whereIn('status', ['Pending', 'Reviewing'])->count();
         $inProgressComplaints = Complaint::where('user_id', $user->id)->where('status', 'In Progress')->count();
@@ -28,7 +26,6 @@ class DashboardController extends Controller
         $recentActivities = Complaint::where('user_id', $user->id)->orderBy('updated_at', 'desc')->take(3)->get();
         $recentSubmissions = Complaint::with('category')->where('user_id', $user->id)->orderBy('created_at', 'desc')->take(5)->get();
 
-        // LOGIKA BARU: Menghitung data 6 bulan terakhir untuk grafik
         $chartLabels = [];
         $chartData = [];
         for ($i = 5; $i >= 0; $i--) {
@@ -41,28 +38,19 @@ class DashboardController extends Controller
         }
 
         return view('mahasiswa.dashboard', compact(
-            'totalComplaints', 
-            'pendingComplaints', 
-            'inProgressComplaints', 
-            'resolvedComplaints',
-            'recentActivities',
-            'recentSubmissions',
-            'chartLabels',
-            'chartData'
+            'totalComplaints', 'pendingComplaints', 'inProgressComplaints', 'resolvedComplaints',
+            'recentActivities', 'recentSubmissions', 'chartLabels', 'chartData'
         ));
     }
 
-    // Fungsi Notifikasi Mahasiswa
     public function notifications(Request $request)
     {
         $user = $request->user();
-        
-        // Ambil riwayat audit (perubahan status oleh admin) untuk tiket milik mahasiswa ini
         $notifications = \App\Models\AuditLog::with(['complaint', 'user'])
             ->whereHas('complaint', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
-            ->where('user_id', '!=', $user->id) // Hanya ambil aktivitas dari orang lain (Admin)
+            ->where('user_id', '!=', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
