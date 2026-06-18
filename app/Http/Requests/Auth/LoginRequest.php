@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -23,12 +22,14 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            // PERBAIKAN: Ubah validasi 'email' agar tidak wajib berekstensi @email.com, 
+            // karena user bisa memasukkan kombinasi angka NIM.
+            'email' => ['required', 'string'], 
             'password' => ['required', 'string'],
         ];
     }
@@ -36,17 +37,38 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
-     * @throws ValidationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // LOGIKA BARU: Cek apakah inputnya Email atau NIM
+        $loginInput = $this->input('email'); // Field input di HTML bernama 'email'
+        
+        // Jika input mengandung format email (@), gunakan kolom 'email'. Jika tidak, gunakan kolom 'nim'.
+        $loginField = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'nim';
+
+        // Susun data kredensial
+        $credentials = [
+            $loginField => $loginInput,
+            'password' => $this->input('password')
+        ];
+
+        // Lakukan Autentikasi
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // PERBAIKAN KEAMANAN: Tolak akses jika akun sedang berstatus 'suspended'
+        if (Auth::user()->status === 'suspended') {
+            Auth::logout(); // Keluarkan kembali secara paksa
+            throw ValidationException::withMessages([
+                'email' => 'Akses Ditolak: Akun Anda telah ditangguhkan oleh Administrator. Silakan hubungi dukungan.',
             ]);
         }
 
@@ -55,8 +77,6 @@ class LoginRequest extends FormRequest
 
     /**
      * Ensure the login request is not rate limited.
-     *
-     * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
     {
@@ -81,6 +101,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
     }
 }

@@ -13,13 +13,11 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role === 'superadmin') {
-            return redirect()->route('superadmin.dashboard');
-        } elseif ($user->role === 'admin') {
+        // Mencegah double redirect
+        if ($user->role === 'superadmin' || $user->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
 
-        // Statistik Kartu Utama
         $totalComplaints = Complaint::where('user_id', $user->id)->count();
         $pendingComplaints = Complaint::where('user_id', $user->id)->whereIn('status', ['Pending', 'Reviewing'])->count();
         $inProgressComplaints = Complaint::where('user_id', $user->id)->where('status', 'In Progress')->count();
@@ -28,12 +26,11 @@ class DashboardController extends Controller
         $recentActivities = Complaint::where('user_id', $user->id)->orderBy('updated_at', 'desc')->take(3)->get();
         $recentSubmissions = Complaint::with('category')->where('user_id', $user->id)->orderBy('created_at', 'desc')->take(5)->get();
 
-        // LOGIKA BARU: Menghitung data 6 bulan terakhir untuk grafik
         $chartLabels = [];
         $chartData = [];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $chartLabels[] = $month->format('M'); // Menghasilkan 'Jan', 'Feb', dst.
+            $chartLabels[] = $month->format('M'); 
             $chartData[] = Complaint::where('user_id', $user->id)
                 ->whereMonth('created_at', $month->month)
                 ->whereYear('created_at', $month->year)
@@ -41,14 +38,22 @@ class DashboardController extends Controller
         }
 
         return view('mahasiswa.dashboard', compact(
-            'totalComplaints', 
-            'pendingComplaints', 
-            'inProgressComplaints', 
-            'resolvedComplaints',
-            'recentActivities',
-            'recentSubmissions',
-            'chartLabels', // Kirim ke blade
-            'chartData'    // Kirim ke blade
+            'totalComplaints', 'pendingComplaints', 'inProgressComplaints', 'resolvedComplaints',
+            'recentActivities', 'recentSubmissions', 'chartLabels', 'chartData'
         ));
+    }
+
+    public function notifications(Request $request)
+    {
+        $user = $request->user();
+        $notifications = \App\Models\AuditLog::with(['complaint', 'user'])
+            ->whereHas('complaint', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->where('user_id', '!=', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('mahasiswa.notification', compact('notifications'));
     }
 }

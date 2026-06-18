@@ -17,6 +17,7 @@ class Complaint extends Model
         'status',
         'priority',
         'is_anonymous',
+        'rating',
     ];
 
     protected $casts = [
@@ -62,6 +63,11 @@ class Complaint extends Model
     {
         return $this->hasMany(AuditLog::class);
     }
+    public function responses()
+    {
+        return $this->hasMany(ComplaintResponse::class);
+    }
+    
 }
 
 ?>

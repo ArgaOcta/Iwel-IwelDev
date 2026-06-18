@@ -20,238 +20,257 @@
         </div>
     @endif
     
-    <form action="{{ route('complaint.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl p-8 flex flex-col gap-6 w-full border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300">
-      @csrf
+    <form action="{{ route('complaint.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl p-8 flex flex-col gap-6 w-full shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-[rgba(195,198,215,0.30)]">
+        @csrf
         
-        <div class="flex flex-col gap-2 w-full">
-          <label class="text-[#434655] text-[13px] font-semibold tracking-[0.65px]">
-            Judul Pengaduan <span class="text-[#ba1a1a]">*</span>
-          </label>
-          <div class="bg-white rounded-lg border border-[#c3c6d7] p-[13px] focus-within:border-[#004ac6] focus-within:ring-2 focus-within:ring-[#004ac6]/20 transition-all duration-200 hover:border-gray-400">
-            <input type="text" name="title" value="{{ old('title') }}" placeholder="Singkat dan jelas (misal: AC Kelas G-201 Rusak)" class="w-full bg-transparent border-none outline-none text-[#191b23] text-base placeholder-[#737686]" required>
+        <div class="flex flex-col gap-5 w-full">
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Judul Pengaduan <span class="text-red-500">*</span></label>
+            <input type="text" name="title" required value="{{ old('title') }}" placeholder="Tuliskan judul singkat tentang masalah ini" class="bg-[#f3f3fe] rounded-lg border border-[#c3c6d7] p-3 px-4 text-[#191b23] text-sm focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition shadow-sm placeholder-[#737686]">
+            @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full relative z-30">
           
-          <div x-data="{ 
-                  open: false, 
-                  selectedId: '{{ old('category_id') }}', 
-                  selectedName: 'Pilih Kategori...' 
-               }" 
-               x-init="@if(old('category_id')) selectedName = '{{ $categories->firstWhere('id', old('category_id'))->name ?? 'Pilih Kategori...' }}'; @endif"
-               class="flex flex-col gap-2 relative">
-            
-            <label class="text-[#434655] text-[13px] font-semibold tracking-[0.65px]">
-              Kategori <span class="text-[#ba1a1a]">*</span>
-            </label>
-            <input type="hidden" name="category_id" :value="selectedId" required>
-            
-            <button @click="open = !open" @click.outside="open = false" type="button" class="w-full bg-white rounded-lg border border-[#c3c6d7] p-[13px] flex justify-between items-center transition-all duration-200 hover:border-gray-400 focus:border-[#004ac6] focus:ring-2 focus:ring-[#004ac6]/20 shadow-sm">
-              <span x-text="selectedName" :class="selectedId ? 'text-[#191b23]' : 'text-[#737686]'" class="text-base font-normal"></span>
-              <svg :class="open ? 'rotate-180' : ''" class="transition-transform duration-200" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M6 7.4L0 1.4L1.4 0L6 4.6L10.6 0L12 1.4L6 7.4Z" fill="#434655"/></svg>
-            </button>
-            
-            <div x-show="open" 
-                 x-transition:enter="transition ease-out duration-200" 
-                 x-transition:enter-start="opacity-0 translate-y-[-10px] scale-95" 
-                 x-transition:enter-end="opacity-100 translate-y-0 scale-100" 
-                 x-transition:leave="transition ease-in duration-100" 
-                 x-transition:leave-start="opacity-100 scale-100" 
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute top-full mt-2 left-0 w-full bg-white border border-[#c3c6d7] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.1)] overflow-hidden z-40 max-h-48 overflow-y-auto" style="display: none;">
-              @foreach($categories as $category)
-                  <div @click="selectedId = '{{ $category->id }}'; selectedName = '{{ $category->name }}'; open = false" 
-                       class="px-4 py-3 cursor-pointer hover:bg-[#f0f4ff] hover:text-[#004ac6] font-medium transition-colors text-[#191b23] text-[15px] border-b border-gray-100 last:border-0">
-                      {{ $category->name }}
-                  </div>
-              @endforeach
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Kategori Pengaduan <span class="text-red-500">*</span></label>
+            <div class="relative bg-[#f3f3fe] rounded-lg border border-[#c3c6d7] focus-within:border-[#004ac6] focus-within:ring-1 focus-within:ring-[#004ac6] transition shadow-sm">
+              <select name="category_id" required class="w-full appearance-none bg-transparent outline-none p-3 px-4 text-[#191b23] text-sm cursor-pointer">
+                <option value="" disabled selected>Pilih Kategori Masalah...</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }} ({{ $cat->department }})</option>
+                @endforeach
+              </select>
+              <svg class="absolute right-4 top-3.5 pointer-events-none text-[#737686]" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.25L7 8.75L10.5 5.25"></path></svg>
             </div>
+            @error('category_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
-
-          <div x-data="{ open: false, selectedId: '{{ old('priority') }}', selectedName: 'Pilih Tingkat Urgensi...' }" 
-               x-init="@if(old('priority')) selectedName = '{{ old('priority') }}'; @endif"
-               class="flex flex-col gap-2 relative">
-            <label class="text-[#434655] text-[13px] font-semibold tracking-[0.65px]">
-              Tingkat Urgensi <span class="text-[#ba1a1a]">*</span>
-            </label>
-            <input type="hidden" name="priority" :value="selectedId" required>
-            
-            <button @click="open = !open" @click.outside="open = false" type="button" class="w-full bg-white rounded-lg border border-[#c3c6d7] p-[13px] flex justify-between items-center transition-all duration-200 hover:border-gray-400 focus:border-[#004ac6] focus:ring-2 focus:ring-[#004ac6]/20 shadow-sm">
-              <span x-text="selectedName" :class="selectedId ? 'text-[#191b23]' : 'text-[#737686]'" class="text-base font-normal"></span>
-              <svg :class="open ? 'rotate-180' : ''" class="transition-transform duration-200" width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M6 7.4L0 1.4L1.4 0L6 4.6L10.6 0L12 1.4L6 7.4Z" fill="#434655"/></svg>
-            </button>
-            
-            <div x-show="open" 
-                 x-transition:enter="transition ease-out duration-200" 
-                 x-transition:enter-start="opacity-0 translate-y-[-10px] scale-95" 
-                 x-transition:enter-end="opacity-100 translate-y-0 scale-100" 
-                 x-transition:leave="transition ease-in duration-100" 
-                 x-transition:leave-start="opacity-100 scale-100" 
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="absolute top-full mt-2 left-0 w-full bg-white border border-[#c3c6d7] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.1)] overflow-hidden z-40" style="display: none;">
-                <div @click="selectedId = 'Rendah'; selectedName = 'Rendah'; open = false" class="px-4 py-3 cursor-pointer hover:bg-green-50 hover:text-green-700 font-medium transition-colors text-[#191b23] text-[15px] border-b border-gray-100">Rendah</div>
-                <div @click="selectedId = 'Sedang'; selectedName = 'Sedang'; open = false" class="px-4 py-3 cursor-pointer hover:bg-orange-50 hover:text-orange-600 font-medium transition-colors text-[#191b23] text-[15px] border-b border-gray-100">Sedang</div>
-                <div @click="selectedId = 'Tinggi'; selectedName = 'Tinggi'; open = false" class="px-4 py-3 cursor-pointer hover:bg-red-50 hover:text-red-600 font-medium transition-colors text-[#191b23] text-[15px]">Tinggi</div>
+          
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Lokasi Insiden / Masalah</label>
+            <input type="text" name="location" value="{{ old('location') }}" placeholder="Contoh: Gedung A Lantai 2, Ruang Lab Komputer" class="bg-[#f3f3fe] rounded-lg border border-[#c3c6d7] p-3 px-4 text-[#191b23] text-sm focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition shadow-sm placeholder-[#737686]">
+          </div>
+          
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Tingkat Urgensi <span class="text-red-500">*</span></label>
+            <div class="relative bg-[#f3f3fe] rounded-lg border border-[#c3c6d7] focus-within:border-[#004ac6] focus-within:ring-1 focus-within:ring-[#004ac6] transition shadow-sm">
+              <select name="priority" required class="w-full appearance-none bg-transparent outline-none p-3 px-4 text-[#191b23] text-sm cursor-pointer">
+                <option value="Rendah" {{ old('priority') == 'Rendah' ? 'selected' : '' }}>Rendah - Tidak mendesak</option>
+                <option value="Sedang" {{ old('priority') == 'Sedang' ? 'selected' : '' }}>Sedang - Perlu penanganan segera</option>
+                <option value="Tinggi" {{ old('priority') == 'Tinggi' ? 'selected' : '' }}>Tinggi - Kritis & darurat</option>
+              </select>
+              <svg class="absolute right-4 top-3.5 pointer-events-none text-[#737686]" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.25L7 8.75L10.5 5.25"></path></svg>
             </div>
-          </div>
-        </div>
-        
-        <div class="flex flex-col gap-2 w-full relative z-20">
-          <label class="text-[#434655] text-[13px] font-semibold tracking-[0.65px]">
-            Deskripsi Detail <span class="text-[#ba1a1a]">*</span>
-          </label>
-          <p class="text-[#737686] text-sm mt-[-4px]">Jelaskan kronologi, lokasi spesifik, dan pihak yang terlibat jika ada.</p>
-          <div class="bg-white rounded-lg border border-[#c3c6d7] p-4 hover:border-gray-400 focus-within:border-[#004ac6] focus-within:ring-2 focus-within:ring-[#004ac6]/20 transition-all duration-200">
-            <textarea name="description" placeholder="Ceritakan detail keluhan Anda di sini..." class="w-full bg-transparent border-none outline-none text-[#191b23] text-[15px] leading-relaxed placeholder-[#737686] min-h-[140px] resize-y" required>{{ old('description') }}</textarea>
-          </div>
-        </div>
-        
-        <div class="flex flex-col gap-2 w-full relative z-10"
-             x-data="{
-                files: [],
-                maxFiles: 5,
-                handleFileSelect(event) {
-                    const newFiles = Array.from(event.target.files);
-                    
-                    // Validasi batas maksimal file
-                    if (this.files.length + newFiles.length > this.maxFiles) {
-                        alert('Maksimal hanya ' + this.maxFiles + ' lampiran yang diperbolehkan.');
-                        this.syncInput(); // kembalikan state memori
-                        return;
-                    }
-                    
-                    newFiles.forEach(file => {
-                        const isImg = file.type.startsWith('image/');
-                        if (isImg) {
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                this.files.push({ file: file, name: file.name, isImage: true, preview: e.target.result });
-                                this.syncInput();
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            this.files.push({ file: file, name: file.name, isImage: false, preview: '' });
-                            this.syncInput();
-                        }
-                    });
-                },
-                removeFile(index) {
-                    this.files.splice(index, 1);
-                    this.syncInput();
-                },
-                syncInput() {
-                    // Trik manipulasi DataTransfer agar file input sinkron dengan array Alpine
-                    const dt = new DataTransfer();
-                    this.files.forEach(f => dt.items.add(f.file));
-                    $refs.fileInput.files = dt.files;
-                }
-             }">
-             
-          <div class="flex justify-between items-end">
-            <label class="text-[#434655] text-[13px] font-semibold tracking-[0.65px]">Lampiran Bukti (Opsional)</label>
-            <span class="text-xs text-[#737686] font-medium"><span x-text="files.length"></span>/5 File</span>
-          </div>
-          
-          <div x-show="files.length < maxFiles" 
-               x-transition:leave="transition ease-in duration-200"
-               x-transition:leave-start="opacity-100 h-auto"
-               x-transition:leave-end="opacity-0 h-0 overflow-hidden"
-               class="bg-[#faf8ff] rounded-lg border-dashed border-2 border-[#c3c6d7] p-8 flex flex-col items-center justify-center relative group hover:border-[#004ac6] transition-all duration-300 cursor-pointer min-h-[140px]">
-            
-            <input type="file" name="attachment[]" multiple x-ref="fileInput" @change="handleFileSelect($event)" 
-                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                   accept=".png,.jpg,.jpeg,.pdf">
-            
-            <div class="flex flex-col items-center justify-center pointer-events-none transition-all">
-                <svg class="w-8 h-8 mb-3 fill-[#737686] group-hover:fill-[#004ac6] group-hover:-translate-y-1 transition-all duration-300" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 25.5H13.5V19.2375L15.9 21.6375L18 19.5L12 13.5L6 19.5L8.1375 21.6L10.5 19.2375V25.5ZM3 30C2.175 30 1.46875 29.7062 0.88125 29.1187C0.29375 28.5312 0 27.825 0 27V3C0 2.175 0.29375 1.46875 0.88125 0.88125C1.46875 0.29375 2.175 0 3 0H15L24 9V27C24 27.825 23.7062 28.5312 23.1187 29.1187C22.5312 29.7062 21.825 30 21 30H3ZM13.5 10.5V3H3V27H21V10.5H13.5ZM3 3V10.5V3V10.5V27V3Z"/></svg>
-                <div class="flex flex-row gap-1 items-center relative z-0">
-                  <span class="text-[#004ac6] text-[15px] font-semibold">Upload file</span>
-                  <span class="text-[#434655] text-[15px]">atau tarik ke sini</span>
-                </div>
-                <div class="text-[#737686] text-sm mt-1.5 relative z-0">PNG, JPG, PDF (Maks. 5 file)</div>
-            </div>
+            @error('priority') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
 
-          <div x-show="files.length > 0" 
-               class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-3" style="display: none;">
-              
-              <template x-for="(file, index) in files" :key="index">
-                  <div class="relative flex flex-col items-center justify-center p-3 bg-white border border-[#c3c6d7] rounded-xl shadow-sm hover:shadow-md transition group overflow-hidden animate-fade-in">
-                      
-                      <button type="button" @click.stop="removeFile(index)" 
-                              class="absolute top-1.5 right-1.5 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-md border border-gray-100 text-red-500 hover:bg-red-500 hover:text-white transition-colors z-20">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                      </button>
-
-                      <template x-if="file.isImage">
-                          <div class="w-full aspect-square rounded-lg overflow-hidden mb-2 bg-gray-50 border border-gray-100">
-                              <img :src="file.preview" class="w-full h-full object-cover">
-                          </div>
-                      </template>
-
-                      <template x-if="!file.isImage">
-                          <div class="w-full aspect-square rounded-lg mb-2 bg-[#f3f3fe] border border-[#d0e1fb] flex items-center justify-center">
-                              <svg class="w-10 h-10 text-[#004ac6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                              </svg>
-                          </div>
-                      </template>
-                      
-                      <span class="text-[#191b23] font-semibold text-xs truncate w-full text-center px-1" x-text="file.name" :title="file.name"></span>
-                  </div>
-              </template>
-              
-          </div>
-        </div>
-        <div class="bg-gray-100 w-full h-[1px] my-2"></div>
-        
-        <div x-data="{ isAnon: {{ old('is_anonymous') ? 'true' : 'false' }}, tooltip: false }" 
-             class="bg-[#faf8ff] rounded-xl border border-gray-200 p-5 flex flex-row gap-4 items-start w-full hover:border-[#d0e1fb] transition-colors shadow-sm cursor-pointer"
-             @click="isAnon = !isAnon"> 
-          
-          <input type="checkbox" name="is_anonymous" value="1" class="hidden" x-model="isAnon">
-          
-          <div :class="isAnon ? 'bg-[#2563eb]' : 'bg-[#e1e2ed]'"
-               class="w-12 h-6 rounded-full relative flex-shrink-0 transition-colors duration-300 ease-in-out mt-0.5 shadow-inner">
-            <div :class="isAnon ? 'translate-x-6' : 'translate-x-0'"
-                 class="bg-white rounded-full w-5 h-5 absolute top-[2px] left-[2px] transform transition-transform duration-300 ease-out shadow-md"></div>
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Deskripsi Detail <span class="text-red-500">*</span></label>
+            <textarea name="description" required rows="5" placeholder="Jelaskan masalah secara rinci. Sertakan waktu kejadian, kronologi, atau informasi penting lainnya..." class="bg-[#f3f3fe] rounded-lg border border-[#c3c6d7] p-3 px-4 text-[#191b23] text-sm focus:outline-none focus:border-[#004ac6] focus:ring-1 focus:ring-[#004ac6] transition shadow-sm resize-y placeholder-[#737686]">{{ old('description') }}</textarea>
+            @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
           
-          <div class="flex flex-col gap-1 w-full">
-            <div class="flex items-center gap-2 relative">
-              <span class="text-[#191b23] text-[15px] font-bold">Kirim sebagai Anonim</span>
-              
-              <div @mouseenter="tooltip = true" @mouseleave="tooltip = false" class="relative flex items-center justify-center cursor-help text-[#737686] hover:text-[#004ac6] transition-colors p-1" @click.stop>
-                <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.75 11.25H8.25V6.75H6.75V11.25ZM7.5 5.25C7.7125 5.25 7.89062 5.17813 8.03438 5.03438C8.17813 4.89062 8.25 4.7125 8.25 4.5C8.25 4.2875 8.17813 4.10938 8.03438 3.96563C7.89062 3.82188 7.7125 3.75 7.5 3.75C7.2875 3.75 7.10938 3.82188 6.96562 3.96563C6.82187 4.10938 6.75 4.2875 6.75 4.5C6.75 4.7125 6.82187 4.89062 6.96562 5.03438C7.10938 5.17813 7.2875 5.25 7.5 5.25ZM7.5 15C6.4625 15 5.4875 14.8031 4.575 14.4094C3.6625 14.0156 2.86875 13.4812 2.19375 12.8062C1.51875 12.1312 0.984375 11.3375 0.590625 10.425C0.196875 9.5125 0 8.5375 0 7.5C0 6.4625 0.196875 5.4875 0.590625 4.575C0.984375 3.6625 1.51875 2.86875 2.19375 2.19375C2.86875 1.51875 3.6625 0.984375 4.575 0.590625C5.4875 0.196875 6.4625 0 7.5 0C8.5375 0 9.5125 0.196875 10.425 0.590625C11.3375 0.984375 12.1312 1.51875 12.8062 2.19375C13.4812 2.86875 14.0156 3.6625 14.4094 4.575C14.8031 5.4875 15 6.4625 15 7.5C15 8.5375 14.8031 9.5125 14.4094 10.425C14.0156 11.3375 13.4812 12.1312 12.8062 12.8062C12.1312 13.4812 11.3375 14.0156 10.425 14.4094C9.5125 14.8031 8.5375 15 7.5 15ZM7.5 13.5C9.175 13.5 10.5938 12.9188 11.7563 11.7563C12.9188 10.5938 13.5 9.175 13.5 7.5C13.5 5.825 12.9188 4.40625 11.7563 3.24375C10.5938 2.08125 9.175 1.5 7.5 1.5C5.825 1.5 4.40625 2.08125 3.24375 3.24375C2.08125 4.40625 1.5 5.825 1.5 7.5C1.5 9.175 2.08125 10.5938 3.24375 11.7563C4.40625 12.9188 5.825 13.5 7.5 13.5Z" fill="currentColor"/></svg>
+          <div class="flex flex-col gap-1.5 w-full">
+            <label class="text-[#191b23] text-sm font-semibold tracking-[0.65px]">Lampiran Bukti (Opsional - Maks. 5 File)</label>
+            <div class="flex items-center justify-center w-full">
                 
-                <div x-show="tooltip" 
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                     class="absolute bottom-[140%] left-1/2 transform -translate-x-1/2 w-[280px] bg-gray-900 text-white text-xs leading-relaxed p-3.5 rounded-lg shadow-xl z-50 text-center" style="display: none;">
-                  Mode Anonim akan menyembunyikan nama dan NIM Anda dari staf yang menangani keluhan.
-                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-gray-900"></div>
+                <div id="dropzone-area" onclick="document.getElementById('file-browser').click()" class="flex flex-col items-center justify-center w-full min-h-[9rem] py-6 border-2 border-[#c3c6d7] border-dashed rounded-lg cursor-pointer bg-[#faf8ff] transition-all duration-200 hover:border-[#004ac6] hover:bg-[#f3f3fe] relative overflow-hidden">
+                    
+                    <div id="dropzone-content" class="flex flex-col items-center justify-center w-full px-4 pointer-events-none">
+                        <svg class="w-10 h-10 mb-3 text-[#737686] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <p class="mb-1 text-sm text-[#434655] text-center"><span class="font-semibold text-[#004ac6]">Klik</span> atau <span class="font-semibold text-[#004ac6]">Tarik & Lepaskan (Drag & Drop)</span> file ke sini</p>
+                        <p class="text-xs text-[#737686] text-center mt-1">Mendukung: PNG, JPG, PDF, DOCX, XLSX (Maks. 5MB per file)</p>
+                    </div>
+
+                </div>
+
+                <input id="file-browser" type="file" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" onchange="handleFileBrowse(this)"/>
+                
+                <input id="real-file-input" type="file" name="attachment[]" class="hidden" multiple>
+
+            </div>
+            @error('attachment.*') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            @error('attachment') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            <p id="file-error-msg" class="text-red-500 text-xs mt-1 hidden font-medium">⚠️ Maksimal hanya 5 file yang diizinkan!</p>
+          </div>
+
+          <div class="border-t border-gray-100 pt-5 mt-2 flex items-start gap-3 w-full">
+            <div class="flex items-center h-5 mt-0.5">
+              <input type="checkbox" name="is_anonymous" value="1" class="w-4 h-4 text-[#004ac6] bg-white border-[#c3c6d7] rounded focus:ring-[#004ac6] cursor-pointer shadow-sm">
+            </div>
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[#191b23] text-[13px] font-bold tracking-[0.65px]">Kirim sebagai Anonim</span>
+                <div class="group relative flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold cursor-help hover:bg-gray-300">
+                  ?
+                  <div class="absolute bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg z-10 text-center">
+                    Mode Anonim menyembunyikan identitas Anda dari staf pelaksana.
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-gray-900"></div>
+                  </div>
                 </div>
               </div>
+              <p class="text-[#737686] text-sm">Gunakan fitur ini untuk menjaga kerahasiaan Anda saat melapor.</p>
             </div>
-            <p class="text-[#737686] text-sm">Gunakan fitur ini jika Anda merasa khawatir tentang privasi atau potensi dampak dari pelaporan.</p>
+          </div>
+          
+          <div class="flex justify-end gap-3 w-full mt-2 pt-4 border-t border-gray-100">
+            <a href="{{ route('dashboard') }}" class="bg-white rounded-lg border border-[#c3c6d7] py-2.5 px-6 hover:bg-gray-50 hover:text-red-600 transition-colors">
+              <span class="font-semibold text-[14px]">Batal</span>
+            </a>
+            <button type="submit" class="bg-[#004ac6] rounded-lg py-2.5 px-6 flex items-center gap-2 hover:bg-blue-800 transition-all shadow-sm">
+              <svg width="15" height="12" viewBox="0 0 15 12" fill="none"><path d="M0 12V0L14.25 6L0 12ZM1.5 9.75L10.3875 6L1.5 2.25V4.875L6 6L1.5 7.125V9.75Z" fill="white"/></svg>
+              <span class="text-white font-semibold text-[14px]">Kirim Pengaduan</span>
+            </button>
           </div>
         </div>
-        
-        <div class="flex justify-end gap-3 w-full mt-2 pt-4 border-t border-gray-100">
-          <a href="{{ route('dashboard') }}" class="bg-white rounded-lg border border-[#c3c6d7] py-2.5 px-6 hover:bg-gray-50 hover:text-red-600 transition-colors">
-            <span class="font-semibold text-[14px]">Batal</span>
-          </a>
-          <button type="submit" class="bg-[#004ac6] rounded-lg py-2.5 px-6 flex items-center gap-2 hover:bg-blue-800 transition-all hover:shadow-lg transform hover:-translate-y-0.5">
-            <svg width="15" height="12" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 12V0L14.25 6L0 12ZM1.5 9.75L10.3875 6L1.5 2.25V4.875L6 6L1.5 7.125V9.75ZM1.5 9.75V6V2.25V4.875V7.125V9.75Z" fill="white"/></svg>
-            <span class="text-white text-[14px] font-bold">Kirim Pengaduan</span>
-          </button>
-        </div>
-        
     </form>
 </div>
+
+<script>
+    // Memori Penyimpanan File
+    const dt = new DataTransfer();
+    const maxFiles = 5;
+    const dropzoneArea = document.getElementById('dropzone-area');
+
+    // 1. Fungsi Utama Memproses File yang Masuk
+    function processFiles(files) {
+        const errorMsg = document.getElementById('file-error-msg');
+        errorMsg.classList.add('hidden');
+
+        Array.from(files).forEach(file => {
+            // Cek apakah belum melebihi limit 5 file
+            if (dt.items.length < maxFiles) {
+                // Cek apakah file ini sudah pernah dimasukkan (mencegah duplikat)
+                let isDuplicate = false;
+                for (let i = 0; i < dt.files.length; i++) {
+                    if (dt.files[i].name === file.name && dt.files[i].size === file.size) {
+                        isDuplicate = true; break;
+                    }
+                }
+                if (!isDuplicate) dt.items.add(file);
+            } else {
+                errorMsg.classList.remove('hidden'); // Munculkan peringatan limit
+            }
+        });
+
+        // Pindahkan data ke Input Asli agar bisa disubmit oleh Form
+        document.getElementById('real-file-input').files = dt.files;
+        renderPreview();
+    }
+
+    // 2. Dipanggil ketika memilih lewat klik kotak (File Explorer)
+    function handleFileBrowse(input) {
+        if (input.files && input.files.length > 0) {
+            processFiles(input.files);
+        }
+        // RESET input klik agar jika user klik cancel, tidak ada data yang terhapus dari memori
+        input.value = ""; 
+    }
+
+    // 3. Menghapus file secara spesifik
+    function removeFile(index, event) {
+        event.preventDefault(); 
+        event.stopPropagation(); // Mencegah kotak file explorer terbuka saat tombol X diklik
+
+        dt.items.remove(index);
+        document.getElementById('real-file-input').files = dt.files;
+        
+        // Sembunyikan pesan error jika file sudah dikurangi
+        if (dt.items.length < maxFiles) {
+            document.getElementById('file-error-msg').classList.add('hidden');
+        }
+        
+        renderPreview();
+    }
+
+    // 4. Me-render (menggambar) tampilan kotak Dropzone
+    function renderPreview() {
+        const content = document.getElementById('dropzone-content');
+        
+        if (dt.files.length > 0) {
+            let previewsHtml = `<div class="flex flex-wrap gap-4 justify-center w-full mt-3 relative z-20">`;
+
+            Array.from(dt.files).forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const objectUrl = URL.createObjectURL(file);
+                    previewsHtml += `
+                        <div class="relative flex flex-col items-center gap-1.5 transition-transform hover:scale-105 group" onclick="event.stopPropagation()">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden border border-[#c3c6d7] shadow-sm bg-white">
+                                <img src="${objectUrl}" class="w-full h-full object-cover" alt="preview">
+                            </div>
+                            <span class="text-[10px] text-[#434655] font-medium max-w-[4.5rem] truncate" title="${file.name}">${file.name}</span>
+                            <button type="button" onclick="removeFile(${index}, event)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm transform transition hover:scale-110">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    previewsHtml += `
+                        <div class="relative flex flex-col items-center gap-1.5 transition-transform hover:scale-105 group" onclick="event.stopPropagation()">
+                            <div class="w-16 h-16 rounded-lg border border-[#c3c6d7] bg-white flex items-center justify-center shadow-sm text-[#004ac6]">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            </div>
+                            <span class="text-[10px] text-[#434655] font-medium max-w-[4.5rem] truncate" title="${file.name}">${file.name}</span>
+                            <button type="button" onclick="removeFile(${index}, event)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm transform transition hover:scale-110">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+
+            previewsHtml += `</div>`;
+
+            content.innerHTML = `
+                <div class="flex flex-col items-center w-full z-10 pointer-events-none">
+                    <p class="text-sm text-[#004ac6] font-bold bg-[#e7e7f3] px-3 py-1 rounded-full mb-1 border border-[#c3c6d7]">
+                        ${dt.files.length} / ${maxFiles} File Disertakan
+                    </p>
+                    <p class="text-xs text-[#737686]">Klik area kosong untuk menambah file lain</p>
+                </div>
+                ${previewsHtml}
+            `;
+            
+            // Hapus animasi hover state
+            dropzoneArea.classList.remove('py-6');
+            dropzoneArea.classList.add('py-4');
+        } else {
+            // Tampilan Kosong (Awal)
+            content.innerHTML = `
+                <svg class="w-10 h-10 mb-3 text-[#737686] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                <p class="mb-1 text-sm text-[#434655] text-center"><span class="font-semibold text-[#004ac6]">Klik</span> atau <span class="font-semibold text-[#004ac6]">Tarik & Lepaskan (Drag & Drop)</span> file ke sini</p>
+                <p class="text-xs text-[#737686] text-center mt-1">Mendukung: PNG, JPG, PDF, DOCX, XLSX (Maks. 5MB per file)</p>
+            `;
+            dropzoneArea.classList.remove('py-4');
+            dropzoneArea.classList.add('py-6');
+        }
+    }
+
+    // 5. Mendaftarkan Event Listener untuk Fitur Drag & Drop
+    document.addEventListener("DOMContentLoaded", function() {
+        // Mencegah browser membuka file saat di-drop di luar area kotak
+        window.addEventListener("dragover", function(e) { e.preventDefault(); }, false);
+        window.addEventListener("drop", function(e) { e.preventDefault(); }, false);
+
+        dropzoneArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzoneArea.classList.add('border-[#004ac6]', 'bg-[#e1e2ed]');
+            dropzoneArea.classList.remove('border-[#c3c6d7]', 'bg-[#faf8ff]');
+        });
+
+        dropzoneArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzoneArea.classList.remove('border-[#004ac6]', 'bg-[#e1e2ed]');
+            dropzoneArea.classList.add('border-[#c3c6d7]', 'bg-[#faf8ff]');
+        });
+
+        dropzoneArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzoneArea.classList.remove('border-[#004ac6]', 'bg-[#e1e2ed]');
+            dropzoneArea.classList.add('border-[#c3c6d7]', 'bg-[#faf8ff]');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                processFiles(e.dataTransfer.files);
+            }
+        });
+    });
+</script>
 @endsection
