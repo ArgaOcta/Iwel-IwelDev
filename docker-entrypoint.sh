@@ -39,7 +39,15 @@ chmod -R 775 \
 chmod -R 755 /var/www/html/public
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. Install vendor if missing (safety check)
+# 3. Create storage symlink (required for uploaded file access via /storage/ URL)
+# ─────────────────────────────────────────────────────────────────────────────
+echo "[entrypoint] Creating storage symlink..."
+cd /var/www/html
+php artisan storage:link --force 2>/dev/null || true
+echo "[entrypoint] Storage symlink ready."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Install vendor if missing (safety check)
 # ─────────────────────────────────────────────────────────────────────────────
 if [ ! -d "/var/www/html/vendor" ]; then
   echo "[entrypoint] Vendor directory not found. Installing dependencies..."
@@ -51,7 +59,7 @@ fi
 cd /var/www/html
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. Generate APP_KEY if missing or empty IN THE .env FILE
+# 5. Generate APP_KEY if missing or empty IN THE .env FILE
 #    (Checking the file, not just the container env var)
 # ─────────────────────────────────────────────────────────────────────────────
 ENV_FILE="/var/www/html/.env"
@@ -72,13 +80,13 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. Run database migrations
+# 6. Run database migrations
 # ─────────────────────────────────────────────────────────────────────────────
 echo "[entrypoint] Running migrations..."
 su -s /bin/sh -c "cd /var/www/html && php artisan migrate --force" www-data
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 6. Cache configuration, routes and views for performance
+# 7. Cache configuration, routes and views for performance
 # ─────────────────────────────────────────────────────────────────────────────
 echo "[entrypoint] Caching configuration..."
 su -s /bin/sh -c "cd /var/www/html && php artisan config:cache" www-data
