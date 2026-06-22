@@ -326,8 +326,81 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const chatContainer = document.querySelector('.chat-container-scroll');
+        const chatForm = document.querySelector('form[action*="response"]');
+        
+        // Fungsi untuk scroll otomatis ke pesan terbawah
+        const scrollToBottom = () => {
+            if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+        };
+        
+        scrollToBottom(); // Panggil saat halaman pertama kali dimuat
+
         if(chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            let currentChatContent = chatContainer.innerHTML.trim();
+
+            // 1. FITUR AUTO-RECEIVE (Background Polling setiap 4 detik)
+            const fetchLatestChat = async () => {
+                try {
+                    // Tarik data halaman ini secara diam-diam
+                    const response = await fetch(window.location.href, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    
+                    if(response.ok) {
+                        const html = await response.text();
+                        // Ambil hanya kotak chat dari seluruh halaman HTML yang ditarik
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newChatContainer = doc.querySelector('.chat-container-scroll');
+                        
+                        if(newChatContainer) {
+                            const newContent = newChatContainer.innerHTML.trim();
+                            // Jika ada perubahan HTML (ada pesan baru masuk)
+                            if(newContent !== currentChatContent) {
+                                chatContainer.innerHTML = newContent;
+                                currentChatContent = newContent;
+                                scrollToBottom(); // Scroll ke bawah untuk melihat pesan
+                            }
+                        }
+                    }
+                } catch(e) { console.error('Polling error:', e); }
+            };
+
+            // Jalankan pengecekan setiap 4000 milidetik (4 detik)
+            setInterval(fetchLatestChat, 4000);
+
+            // 2. FITUR AUTO-SEND (Kirim Pesan Tanpa Refresh)
+            if(chatForm) {
+                chatForm.addEventListener('submit', async function(e) {
+                    e.preventDefault(); // Hentikan fungsi loading/refresh bawaan browser
+                    
+                    const submitBtn = chatForm.querySelector('button[type="submit"]');
+                    const inputField = chatForm.querySelector('input[name="response"]');
+                    
+                    // Efek tombol sedang memproses
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-wait');
+                    
+                    try {
+                        const res = await fetch(chatForm.action, {
+                            method: 'POST',
+                            body: new FormData(chatForm),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        
+                        if(res.ok) {
+                            inputField.value = ''; // Kosongkan input setelah terkirim
+                            await fetchLatestChat(); // Langsung tarik pesan baru ke layar!
+                        }
+                    } catch(err) {
+                        console.error('Gagal mengirim pesan');
+                    } finally {
+                        // Kembalikan tombol ke semula
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-50', 'cursor-wait');
+                        inputField.focus();
+                    }
+                });
+            }
         }
     });
 </script>

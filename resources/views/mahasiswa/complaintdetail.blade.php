@@ -121,8 +121,7 @@
                     </div>
                 </div>
 
-                <div class="bg-[#faf8ff] flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col gap-4 relative">
-                    <div class="text-center mb-4">
+                <div class="bg-[#faf8ff] flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col gap-4 relative chat-container-scroll">                    <div class="text-center mb-4">
                         <span class="bg-[#ededf9] text-[#434655] text-[10px] sm:text-[11px] font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
                             LAPORAN DIBUAT - {{ $complaint->created_at?->format('d M, H:i') ?? 'N/A' }}
                         </span>
@@ -300,9 +299,72 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const chatContainer = document.querySelector('.overflow-y-auto');
+        const chatContainer = document.querySelector('.chat-container-scroll');
+        const chatForm = document.querySelector('form[action*="response"]');
+        
+        const scrollToBottom = () => {
+            if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+        };
+        
+        scrollToBottom();
+
         if(chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            let currentChatContent = chatContainer.innerHTML.trim();
+
+            const fetchLatestChat = async () => {
+                try {
+                    const response = await fetch(window.location.href, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if(response.ok) {
+                        const html = await response.text();
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newChatContainer = doc.querySelector('.chat-container-scroll');
+                        
+                        if(newChatContainer) {
+                            const newContent = newChatContainer.innerHTML.trim();
+                            if(newContent !== currentChatContent) {
+                                chatContainer.innerHTML = newContent;
+                                currentChatContent = newContent;
+                                scrollToBottom();
+                            }
+                        }
+                    }
+                } catch(e) { console.error('Polling error:', e); }
+            };
+
+            setInterval(fetchLatestChat, 4000);
+
+            if(chatForm) {
+                chatForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = chatForm.querySelector('button[type="submit"]');
+                    const inputField = chatForm.querySelector('input[name="response"]');
+                    
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                    
+                    try {
+                        const res = await fetch(chatForm.action, {
+                            method: 'POST',
+                            body: new FormData(chatForm),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        
+                        if(res.ok) {
+                            inputField.value = ''; 
+                            await fetchLatestChat(); 
+                        }
+                    } catch(err) {
+                        console.error('Gagal mengirim pesan');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        inputField.focus();
+                    }
+                });
+            }
         }
     });
 </script>

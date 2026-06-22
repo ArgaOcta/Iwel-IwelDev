@@ -35,15 +35,20 @@
 
   <div :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'" class="bg-white border-r border-[#c3c6d7] flex flex-col justify-between shrink-0 w-[260px] h-screen fixed left-0 top-0 z-50 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-transform duration-300 md:translate-x-0">
     <div>
-        <div class="p-6 flex flex-row items-center justify-between relative border-b border-[#e1e2ed]">
-          <div class="flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 9.2112L21 5.7373V17.183C21 17.3896 20.8728 17.575 20.68 17.6494L12 20.9998V9.2112Z" fill="#2563EB"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12 4.09398L16.7062 5.78689L12 7.60344L7.29385 5.78689L12 4.09398ZM4.5 7.92424L10.5 10.2401V18.813L4.5 16.4971V7.92424ZM13.5 18.813V10.2401L19.5 7.92424V16.4971L13.5 18.813ZM12.677 1.14931C12.2394 0.991896 11.7606 0.991896 11.323 1.14931L2.49227 4.32593C1.89695 4.54008 1.5 5.10474 1.5 5.73739V17.183C1.5 18.0097 2.00859 18.7512 2.77981 19.0489L11.4599 22.3992C11.8075 22.5334 12.1925 22.5334 12.5401 22.3992L21.2202 19.0489C21.9914 18.7512 22.5 18.0097 22.5 17.183V5.73739C22.5 5.10474 22.1031 4.54008 21.5077 4.32593L12.677 1.14931Z" fill="#2563EB"/></svg>
-              <div class="text-[#191b23] font-['Manrope-Bold',_sans-serif] text-lg font-bold tracking-[0.65px]">Admin Panel</div>
-          </div>
-          <button @click="mobileMenuOpen = false" class="md:hidden p-2 -mr-2 text-gray-400 hover:text-[#ba1a1a] hover:bg-red-50 rounded-lg transition-colors">
-              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+      <div class="p-6 flex flex-row items-center justify-between relative border-b border-[#e1e2ed]">
+        <div class="flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
+            <div class="w-10 h-10 bg-white border border-[#e1e2ed] rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                <img src="{{ asset('assets/icons/logo.svg') }}" alt="SCMS Logo" width="22" height="18" class="block">
+            </div>
+            <div class="flex flex-col justify-center">
+                <div class="text-[#191b23] font-['Manrope-Bold',_sans-serif] text-[22px] font-bold tracking-[0.5px] leading-tight">SCMS</div>
+                <div class="text-[#434655] font-['Manrope-SemiBold',_sans-serif] text-[10px] font-bold tracking-wider uppercase">Admin Panel</div>
+            </div>
         </div>
+        <button @click="mobileMenuOpen = false" class="md:hidden p-2 -mr-2 text-gray-400 hover:text-[#ba1a1a] hover:bg-red-50 rounded-lg transition-colors">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
         
         <div class="px-3 pt-4 flex flex-col gap-1 relative overflow-y-auto">
           

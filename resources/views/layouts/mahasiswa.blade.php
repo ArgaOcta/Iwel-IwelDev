@@ -51,9 +51,14 @@
   <div :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'" class="bg-white border-r border-[#c3c6d7] flex flex-col justify-between shrink-0 w-[260px] h-screen fixed left-0 top-0 z-50 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-transform duration-300 md:translate-x-0">
     <div>
       <div class="p-6 flex flex-row items-center justify-between relative border-b border-[#e1e2ed]">
-        <div class="flex flex-col gap-1 items-start justify-start">
-            <div class="text-[#004ac6] font-['Manrope-Bold',_sans-serif] text-2xl font-bold tracking-[0.65px] hover:scale-105 transition-transform cursor-default">SCMS</div>
-            <div class="text-[#434655] font-['Manrope-SemiBold',_sans-serif] text-[13px] leading-[18px] font-semibold tracking-[0.65px]">Academic Portal</div>
+        <div class="flex items-center gap-3 hover:scale-105 transition-transform cursor-default">
+            <div class="w-10 h-10 bg-white border border-[#e1e2ed] rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                <img src="{{ asset('assets/icons/logo.svg') }}" alt="SCMS Logo" width="22" height="18" class="block">
+            </div>
+            <div class="flex flex-col justify-center">
+                <div class="text-[#004ac6] font-['Manrope-Bold',_sans-serif] text-[22px] font-bold tracking-[0.5px] leading-tight">SCMS</div>
+                <div class="text-[#434655] font-['Manrope-SemiBold',_sans-serif] text-[10px] font-bold tracking-wider uppercase">Academic Portal</div>
+            </div>
         </div>
         <button @click="mobileMenuOpen = false" class="md:hidden p-2 -mr-2 text-gray-400 hover:text-[#ba1a1a] hover:bg-red-50 rounded-lg transition-colors">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
