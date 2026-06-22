@@ -48,6 +48,7 @@ Route::middleware(['auth', 'role:admin,superadmin'])->prefix('admin')->group(fun
     Route::post('/categories', [AdminDashboardController::class, 'storeCategory'])->name('admin.categories.store');
     Route::put('/categories/{id}', [AdminDashboardController::class, 'updateCategory'])->name('admin.categories.update');
     Route::delete('/categories/{id}', [AdminDashboardController::class, 'destroyCategory'])->name('admin.categories.destroy');
+    Route::delete('/complaints/{id}', [App\Http\Controllers\Admin\ComplaintManageController::class, 'destroy'])->name('admin.complaints.destroy');
 
     // FITUR EKSKLUSIF SUPER ADMIN
     Route::middleware('role:superadmin')->group(function () {
