@@ -5,97 +5,82 @@
 @php($activeNav = 'how-it-works')
 
 @section('content')
+    <style>
+        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+        .animate-fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .glass-panel { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .timeline-line::before { content: ''; position: absolute; left: 23px; top: 40px; bottom: -40px; width: 2px; background: linear-gradient(to bottom, #004ac6, transparent); z-index: 0; }
+        li:last-child .timeline-line::before { display: none; }
+    </style>
+
     {{-- Hero --}}
-    <section class="relative overflow-hidden bg-white py-24">
-        <div
-            class="pointer-events-none absolute inset-0 opacity-5"
-            style="background: radial-gradient(circle at 50% 50%, #004AC6 2%, transparent 2%); background-size: 32px 32px;"
-            aria-hidden="true"
-        ></div>
-        <div class="relative mx-auto flex max-w-[1280px] flex-col items-center gap-6 px-6 text-center">
-            <h1 class="text-[32px] font-bold leading-10 tracking-[-0.02em] text-[#191B23]">Jalur Transparan Menuju Resolusi</h1>
-            <p class="max-w-[672px] text-base leading-[26px] text-[#434655] opacity-80">
-                Sistem Manajemen Pengaduan Mahasiswa dirancang untuk akuntabilitas. Alur kerja
-                terstruktur kami memastikan setiap kekhawatiran didengar, dilacak, dan ditangani dengan
-                presisi institusional.
+    <section class="relative overflow-hidden pt-28 pb-16 bg-[#f8fafc]">
+        <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(#c3c6d7 1px, transparent 1px); background-size: 24px 24px;"></div>
+        <div class="relative mx-auto flex max-w-[1280px] flex-col items-center gap-6 px-6 text-center opacity-0 animate-fade-up">
+            <div class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#004ac6]">
+                Alur Proses
+            </div>
+            <h1 class="text-4xl font-extrabold leading-tight text-[#191B23] sm:text-5xl">Jalur Transparan<br/>Menuju Resolusi</h1>
+            <p class="max-w-2xl text-lg text-[#505f76]">
+                Kami mendesain alur kerja yang logis, aman, dan tanpa hambatan. Dari laporan pertama hingga penyelesaian, Anda tidak akan pernah kehilangan jejak.
             </p>
         </div>
     </section>
 
     {{-- 4-Step Process --}}
-    <section class="bg-gradient-to-b from-white to-slate-50 px-6 py-24">
-        <div class="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            @foreach ([
-                ['icon' => 'step-submit.svg', 'stage' => 'TAHAP 01', 'title' => 'Pengajuan', 'text' => "Mahasiswa mengirimkan keluhan\nterperinci secara aman melalui\nportal. Tersedia opsi pengajuan\nanonim untuk masalah yang bersifat\nsensitif."],
-                ['icon' => 'step-triage.svg', 'stage' => 'TAHAP 02', 'title' => 'Triase & Perutean', 'text' => "Sistem secara otomatis\nmengkategorikan dan meneruskan\npengaduan ke kepala departemen\nterkait, memastikan pemrosesan\nyang efisien."],
-                ['icon' => 'step-resolution.svg', 'stage' => 'TAHAP 03', 'title' => 'Resolusi', 'text' => "Admin berkolaborasi mencari solusi\nsambil memberikan pembaruan\nstatus waktu nyata yang dapat\ndiakses melalui dasbor pribadi\nmahasiswa."],
-                ['icon' => 'step-feedback.svg', 'stage' => 'TAHAP 04', 'title' => 'Umpan Balik & Penutupan', 'text' => "Setelah diselesaikan, mahasiswa\nmemberikan umpan balik untuk\nmenjamin kualitas layanan institusi\ndan memfinalisasi dokumentasi\nkasus."],
-            ] as $step)
-                <article class="flex flex-col gap-4 rounded-xl border border-[#C3C6D7] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#D0E1FB]">
-                        <img src="{{ asset('assets/icons/' . $step['icon']) }}" alt="" class="block h-[22px] w-[22px]">
-                    </div>
-                    <p class="text-[13px] font-semibold uppercase leading-[18px] tracking-[0.1em] text-[#004AC6]">{{ $step['stage'] }}</p>
-                    <h3 class="text-lg font-semibold leading-7 text-[#191B23]">{{ $step['title'] }}</h3>
-                    <p class="whitespace-pre-line text-sm leading-5 text-[#434655]">{{ $step['text'] }}</p>
-                </article>
-            @endforeach
-        </div>
-    </section>
+    <section class="px-6 py-20 relative bg-[#f8fafc]">
+        <div class="mx-auto grid max-w-[1280px] grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
+            
+            <div class="flex flex-col gap-6 opacity-0 animate-fade-up" style="animation-delay: 100ms;">
+                <ul class="relative space-y-8">
+                    
+                    <li class="relative pl-16 group timeline-line">
+                        <div class="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border-2 border-[#e1e2ed] shadow-sm transition-all duration-300 group-hover:bg-[#004ac6] group-hover:border-[#004ac6] group-hover:scale-110 group-hover:shadow-lg group-hover:-rotate-3 z-10 text-[#004ac6] group-hover:text-white">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl transition-transform hover:-translate-y-1">
+                            <h3 class="text-xl font-bold text-[#191B23] mb-2">1. Pengajuan Laporan</h3>
+                            <p class="text-base text-[#505f76]">Mahasiswa mengisi formulir cerdas kami, melampirkan bukti foto/dokumen, dan menentukan tingkat urgensi.</p>
+                        </div>
+                    </li>
 
-    {{-- Visualization --}}
-    <section class="bg-white px-6 py-24">
-        <div class="mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            <div class="flex flex-col gap-6">
-                <h2 class="text-[32px] font-bold leading-10 tracking-[-0.02em] text-[#191B23]">
-                    Memberdayakan Mahasiswa<br>Melalui Data
-                </h2>
-                <p class="text-base leading-6 text-[#434655]">
-                    SCMS bukan sekadar kotak surat—ini adalah alat tata kelola yang
-                    komprehensif. Dengan memusatkan komunikasi, kami
-                    menghilangkan hambatan dan memastikan tidak ada keluhan
-                    mahasiswa yang terabaikan oleh administrasi.
-                </p>
-                <div class="flex flex-col gap-4 pt-2">
-                    <div class="flex gap-4 rounded-lg bg-[#EDEDF9] p-4">
-                        <img src="{{ asset('assets/icons/icon-verified.svg') }}" alt="" width="22" height="21" class="mt-0.5 block shrink-0">
-                        <div>
-                            <h4 class="text-lg font-semibold leading-7 text-[#191B23]">Identitas Terverifikasi</h4>
-                            <p class="text-sm leading-5 text-[#434655]">Integrasi SSO institusi untuk autentikasi yang aman.</p>
+                    <li class="relative pl-16 group timeline-line">
+                        <div class="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border-2 border-[#e1e2ed] shadow-sm transition-all duration-300 group-hover:bg-[#004ac6] group-hover:border-[#004ac6] group-hover:scale-110 group-hover:shadow-lg group-hover:-rotate-3 z-10 text-[#004ac6] group-hover:text-white">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="21" y1="8" x2="21" y2="21"></line><line x1="9" y1="8" x2="9" y2="21"></line><line x1="5" y1="3" x2="19" y2="3"></line></svg>
                         </div>
-                    </div>
-                    <div class="flex gap-4 rounded-lg bg-[#EDEDF9] p-4">
-                        <img src="{{ asset('assets/icons/icon-encryption.svg') }}" alt="" width="16" height="20" class="mt-0.5 block shrink-0">
-                        <div>
-                            <h4 class="text-lg font-semibold leading-7 text-[#191B23]">Enkripsi End-to-End</h4>
-                            <p class="text-sm leading-5 text-[#434655]">Data Anda dilindungi oleh standar keamanan tertinggi.</p>
+                        <div class="glass-panel p-6 rounded-2xl transition-transform hover:-translate-y-1">
+                            <h3 class="text-xl font-bold text-[#191B23] mb-2">2. Triase Otomatis</h3>
+                            <p class="text-base text-[#505f76]">Sistem memilah dan mengarahkan tiket langsung ke dasbor departemen terkait (Fasilitas, Academic, dll) secara instan.</p>
                         </div>
-                    </div>
+                    </li>
+
+                    <li class="relative pl-16 group timeline-line">
+                        <div class="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border-2 border-[#e1e2ed] shadow-sm transition-all duration-300 group-hover:bg-[#004ac6] group-hover:border-[#004ac6] group-hover:scale-110 group-hover:shadow-lg group-hover:-rotate-3 z-10 text-[#004ac6] group-hover:text-white">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl transition-transform hover:-translate-y-1">
+                            <h3 class="text-xl font-bold text-[#191B23] mb-2">3. Investigasi & Resolusi</h3>
+                            <p class="text-base text-[#505f76]">Admin meninjau masalah dan berkomunikasi dua arah dengan pelapor melalui fitur obrolan *real-time* di dalam tiket.</p>
+                        </div>
+                    </li>
+
+                    <li class="relative pl-16 group timeline-line">
+                        <div class="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border-2 border-[#e1e2ed] shadow-sm transition-all duration-300 group-hover:bg-[#004ac6] group-hover:border-[#004ac6] group-hover:scale-110 group-hover:shadow-lg group-hover:-rotate-3 z-10 text-[#004ac6] group-hover:text-white">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl transition-transform hover:-translate-y-1">
+                            <h3 class="text-xl font-bold text-[#191B23] mb-2">4. Ulasan Penutup</h3>
+                            <p class="text-base text-[#505f76]">Setelah masalah selesai, mahasiswa memberikan skor kepuasan (Rating) untuk membantu institusi menjaga kualitas layanan.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="relative opacity-0 animate-fade-up perspective-1000" style="animation-delay: 200ms;">
+                <div class="absolute -inset-4 bg-gradient-to-r from-[#004ac6] to-transparent rounded-full blur-2xl opacity-20"></div>
+                <div class="relative transform transition-transform duration-700 hover:rotate-2 hover:scale-[1.03]">
+                    <img src="{{ asset('assets/icons/phone.png') }}" alt="Dasbor Institusi" class="block w-full">
                 </div>
-            </div>
-
-            <div class="relative overflow-hidden rounded-2xl shadow-[0_8px_10px_-6px_rgba(0,0,0,0.1),0_20px_25px_-5px_rgba(0,0,0,0.1)]">
-                <img
-                    src="{{ asset('assets/icons/dashboard-preview-44d8a8.png') }}"
-                    alt="Dasbor Institusi"
-                    class="block aspect-video w-full object-cover"
-                >
-                <div class="absolute inset-0 bg-[rgba(0,74,198,0.1)]" aria-hidden="true"></div>
-            </div>
-        </div>
-    </section>
-
-    {{-- CTA --}}
-    <section class="bg-[#004AC6] px-6 py-24">
-        <div class="mx-auto flex max-w-[1280px] flex-col items-center gap-4 px-6 text-center">
-            <h2 class="text-[32px] font-bold leading-10 tracking-[-0.02em] text-white">Siap untuk Memulai?</h2>
-            <p class="max-w-[576px] text-base leading-6 text-white opacity-90">
-                Ambil langkah pertama untuk menyelesaikan masalah institusional Anda hari
-                ini. Tim kami siap membantu Anda.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4 pt-6">
-                <a href="#" class="rounded-xl bg-white px-10 py-[18px] text-lg font-bold leading-7 text-[#004AC6] transition-opacity hover:opacity-90">Ajukan Pengaduan</a>
-                <a href="{{ url('/faq') }}" class="rounded-xl border-2 border-white px-10 py-4 text-lg font-bold leading-7 text-white transition-opacity hover:opacity-90">Lihat FAQ</a>
             </div>
         </div>
     </section>

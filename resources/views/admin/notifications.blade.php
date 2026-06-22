@@ -25,9 +25,9 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-xl border border-[rgba(195,198,215,0.30)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
+    <div id="notification-container" class="bg-white rounded-xl border border-[rgba(195,198,215,0.30)] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
         @forelse($notifications as $notif)
-        <a href="{{ route('admin.complaints.show', $notif->id) }}" class="border-b border-[#e1e2ed] p-6 flex flex-row gap-4 items-start relative hover:bg-blue-50 transition cursor-pointer group">
+        <a href="{{ route('admin.complaints.show', $notif->id) }}" class="border-b border-[#e1e2ed] p-6 flex flex-row gap-4 items-start relative hover:bg-blue-50 transition cursor-pointer group animate-fade-up">
             <div class="bg-[rgba(37,99,235,0.10)] group-hover:bg-[#004ac6] transition-colors rounded-full w-12 h-12 flex items-center justify-center shrink-0">
                 <svg class="text-[#004ac6] group-hover:text-white transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
             </div>
@@ -51,4 +51,48 @@
         @endforelse
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const notifContainer = document.getElementById('notification-container');
+        
+        if(notifContainer) {
+            let currentNotifContent = notifContainer.innerHTML.trim();
+
+            const fetchLatestNotifs = async () => {
+                try {
+                    // Tarik data halaman ini secara diam-diam di background
+                    const response = await fetch(window.location.href, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    
+                    if(response.ok) {
+                        const html = await response.text();
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const newNotifContainer = doc.getElementById('notification-container');
+                        
+                        if(newNotifContainer) {
+                            const newContent = newNotifContainer.innerHTML.trim();
+                            // Jika ada perubahan HTML (ada laporan baru masuk)
+                            if(newContent !== currentNotifContent) {
+                                // Ganti isi kotak notifikasi lama dengan yang baru
+                                notifContainer.innerHTML = newContent;
+                                currentNotifContent = newContent;
+                                
+                                // Opsi tambahan: Mainkan suara kecil jika ingin admin tahu ada notif masuk
+                                // const audio = new Audio('/assets/sounds/notification.mp3');
+                                // audio.play().catch(e => console.log('Audio diputar setelah interaksi user'));
+                            }
+                        }
+                    }
+                } catch(e) { 
+                    console.error('Gagal mengambil data notifikasi:', e); 
+                }
+            };
+
+            // Jalankan pengecekan notifikasi setiap 5 detik (5000ms)
+            setInterval(fetchLatestNotifs, 5000);
+        }
+    });
+</script>
 @endsection

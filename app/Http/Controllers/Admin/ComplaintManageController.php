@@ -74,7 +74,7 @@ class ComplaintManageController extends Controller
             'complaint_id' => $complaint->id,
             'user_id' => auth()->id(),
             'message' => $request->response,
-            'is_internal' => $request->has('is_internal') ? true : false,
+            'is_internal' => $request->filled('is_internal'),
         ]);
 
         // Opsional cerdas: Jika status masih 'Pending', ubah otomatis menjadi 'In Progress'
@@ -125,5 +125,20 @@ class ComplaintManageController extends Controller
         }
 
         return back()->with('success', 'Status pengaduan berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus Pengaduan beserta data terkait
+     */
+    public function destroy($id)
+    {
+        $complaint = Complaint::findOrFail($id);
+        
+        // Catatan: Jika ada logic untuk menghapus file fisik lampiran dari Storage, letakkan di sini
+        // foreach($complaint->attachments as $attachment) { Storage::delete($attachment->file_path); }
+
+        $complaint->delete();
+
+        return back()->with('success', 'Tiket pengaduan berhasil dihapus permanen.');
     }
 }
