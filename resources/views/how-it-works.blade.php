@@ -79,7 +79,7 @@
             <div class="relative opacity-0 animate-fade-up perspective-1000" style="animation-delay: 200ms;">
                 <div class="absolute -inset-4 bg-gradient-to-r from-[#004ac6] to-transparent rounded-full blur-2xl opacity-20"></div>
                 <div class="relative transform transition-transform duration-700 hover:rotate-2 hover:scale-[1.03]">
-                    <img src="{{ asset('assets/icons/phone.png') }}" alt="Dasbor Institusi" class="block w-full">
+                    <img src="{{ asset('assets/icons/phone.webp') }}" alt="Dasbor Institusi" class="block w-full">
                 </div>
             </div>
         </div>
