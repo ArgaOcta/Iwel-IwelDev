@@ -68,7 +68,7 @@
             <div class="relative mt-4 lg:mt-0 group opacity-0 animate-fade-up" style="animation-delay: 150ms;">
                 <div class="absolute -inset-2 bg-gradient-to-r from-[#004ac6]/20 to-transparent rounded-[2rem] blur-xl opacity-50"></div>
                 <div class="relative transform transition-transform duration-500 hover:-translate-y-1">
-                    <img src="{{ asset('assets/icons/mac.png') }}" alt="Pratinjau SCMS" class="block w-full object-cover">
+                    <img src="{{ asset('assets/icons/mac.webp') }}" alt="Pratinjau SCMS" class="block w-full object-cover">
                 </div>
                 
                 <div class="absolute -bottom-6 -left-4 sm:-left-8 bg-white/90 backdrop-blur-md border border-gray-100 rounded-2xl p-4 shadow-lg transform transition-transform duration-300 hover:scale-105">
@@ -154,7 +154,7 @@
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-[#b4c5ff] opacity-20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
             
             <div class="relative z-10 flex flex-col items-center gap-6 opacity-0 animate-fade-up">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Jangan Diam Saja. Laporkan.</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Jangan Diam Saja. Laporkan!</h2>
                 <p class="text-lg text-white/80 max-w-xl">Bergabunglah dalam menciptakan lingkungan kampus yang lebih baik. Satu laporan Anda bisa membawa perubahan besar.</p>
                 <a href="{{ route('register') }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-bold text-[#004ac6] transition-transform hover:scale-105 hover:shadow-lg">
                     Daftar Sekarang Secara Gratis
