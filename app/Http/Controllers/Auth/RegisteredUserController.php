@@ -29,28 +29,28 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // 1. PERBAIKAN: Tambahkan validasi untuk 'nim'
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'nim' => ['required', 'string', 'max:50', 'unique:'.User::class], // Mencegah NIM ganda
+            'nim' => ['required', 'string', 'max:50', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // 2. PERBAIKAN: Masukkan NIM dan Set Role Default ke Database
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'nim' => $request->nim, // Menyimpan NIM
-            'role' => 'mahasiswa',  // Pastikan yang daftar selalu menjadi mahasiswa
-            'status' => 'active',   // Status akun langsung aktif
+            'nim' => $request->nim,
+            'role' => 'mahasiswa',
+            'status' => 'active',
             'password' => Hash::make($request->password),
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // PERBAIKAN: Hapus Auth::login($user) agar tidak langsung masuk ke dashboard
+        // Auth::login($user); 
 
-        return redirect(route('dashboard', absolute: false));
+        // PERBAIKAN: Arahkan kembali ke halaman login dengan pesan sukses
+        return redirect()->route('login')->with('status', 'Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.');
     }
 }
